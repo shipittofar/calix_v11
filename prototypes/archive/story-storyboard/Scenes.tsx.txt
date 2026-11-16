@@ -1,0 +1,314 @@
+import Image from "next/image";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { getPublicSettings } from "@/lib/settings/public";
+import { primaryCta } from "@/content/site";
+import { services } from "@/content/services";
+import { collaboration, processSteps } from "@/content/process";
+import { featuredProjects, workGateMet } from "@/content/work";
+import { ContentPlaceholder, Fact } from "@/components/ui/Pending";
+import { WorkGapNotice } from "@/components/work/WorkGapNotice";
+import { ProjectList } from "@/components/work/ProjectList";
+
+/**
+ * The home page's ten-scene story, built directly on the owner's approved storyboard
+ * (docs/storyboard-direction.md). Each scene's image is the storyboard panel itself
+ * (public/cinema/scene-NN.webp, extracted by scripts/extract_storyboard.py), shown in its
+ * original portrait composition. Scene titles and captions are the storyboard's own words.
+ *
+ * Every scene is readable HTML with its image inline. With motion on, StoryPlayer turns scenes
+ * 02–10 into a sticky portrait frame beside the scrolling text, revealing each plate in turn.
+ */
+
+type Scene = {
+  n: string;
+  name: string;
+  caption: string;
+  /** The storyboard shows an invented brand ("MINERAL"), so the scene is labelled as an illustration. */
+  illustration?: boolean;
+  /** The plate shows the gold sphere: a soft glint pulses on it (position per scene in app/cinema.css, since the CSP forbids inline styles). */
+  glint?: boolean;
+};
+
+const SCENES: Scene[] = [
+  { n: "01", name: "Origin", caption: "An idea appears — a single point of light in a quiet space.", glint: true },
+  { n: "02", name: "Awakening", caption: "The idea creates movement, finding energy in unexpected places.", glint: true },
+  { n: "03", name: "Discovery", caption: "New elements enter, revealing different possibilities." },
+  { n: "04", name: "Foundation", caption: "The pieces begin to align, establishing a coherent structure.", glint: true },
+  { n: "05", name: "Character", caption: "The identity develops its own personality and distinctive character." },
+  { n: "06", name: "Identity", caption: "A recognizable signature emerges." },
+  { n: "07", name: "Language", caption: "Typography, colors, materials and imagery come together in a unified visual language.", illustration: true },
+  { n: "08", name: "Expression", caption: "The identity appears across different formats and experiences.", illustration: true },
+  { n: "09", name: "Ecosystem", caption: "Different expressions connect and form a coherent world.", illustration: true },
+  { n: "10", name: "Beyond", caption: "A complete identity, always evolving." },
+];
+
+const scene = (n: string) => SCENES.find((s) => s.n === n)!;
+
+/**
+ * `sizes` per plate placement, from the measured layout (docs/image-spec.md): the hero plate is at
+ * most 515 CSS px wide (≥1000 px screens), 420 px on tablets and the column width on phones; the
+ * sticky frame is at most 539 px and only shown from 1000 px; inline plates are at most 460 px.
+ * Next.js serves AVIF or WebP at the matching width and never above the master's own width.
+ */
+const SIZES = {
+  hero: "(min-width: 1000px) 515px, (min-width: 768px) 420px, calc(100vw - 40px)",
+  framed: "539px",
+  inline: "(min-width: 768px) 460px, calc(100vw - 40px)",
+} as const;
+
+function Plate({ s, priority = false, className = "", place }: { s: Scene; priority?: boolean; className?: string; place: keyof typeof SIZES }) {
+  return (
+    <figure className={`sb-plate ${className}`} data-plate={s.n}>
+      {/* media: scaled by the scroll player · drift: slow ambient camera move (CSS, off for reduced motion) */}
+      <div className="sb-plate__media">
+        <div className="sb-plate__drift">
+          <Image
+            src={`/cinema/scene-${s.n}.webp`}
+            alt=""
+            width={1080}
+            height={1805}
+            priority={priority}
+            quality={85}
+            sizes={SIZES[place]}
+            className="sb-plate__img"
+          />
+          {s.glint ? (
+            <span className={`sb-plate__glint sb-plate__glint--${s.n}`} aria-hidden="true" />
+          ) : null}
+        </div>
+      </div>
+      {s.illustration ? <figcaption className="sb-plate__note">Illustration, not client work</figcaption> : null}
+    </figure>
+  );
+}
+
+function Mark({ s }: { s: Scene }) {
+  return (
+    <p className="sb-mark">
+      <span className="sb-mark__n" aria-hidden="true">
+        {s.n}
+      </span>
+      <span className="sb-mark__name">{s.name}</span>
+    </p>
+  );
+}
+
+/** 01 Origin: the hero. The headline is visible on first paint and never animated in. */
+export async function Origin() {
+  const { replyTime } = await getPublicSettings();
+  const s = scene("01");
+  return (
+    <section className="sb-hero surface-inverse" aria-labelledby="hero-title" data-scene="01">
+      <div className="container-calix sb-hero__grid">
+        <div className="sb-hero__copy">
+          <Mark s={s} />
+          <h1 id="hero-title" className="type-display sb-hero__title">
+            Make Your Brand Impossible to Ignore.
+          </h1>
+          <p className="type-lead measure sb-hero__lead">
+            Strategy, design, technology and marketing — connected to build stronger brands and better digital outcomes.
+          </p>
+          <div className="sb-hero__actions">
+            <Link href={primaryCta.href} className="btn btn-primary sb-btn-light" data-cta="hero">
+              {primaryCta.label}
+            </Link>
+            <a href="#work" className="btn btn-secondary">
+              Explore Our Work
+            </a>
+          </div>
+          <Fact value={replyTime} render={(v) => <p className="type-small sb-muted">We reply within {v}.</p>} />
+          <p className="sb-caption">{s.caption}</p>
+        </div>
+        <div className="sb-hero__media" data-hero-plate>
+          <Plate s={s} priority place="hero" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stage({ n, children, id, titleId }: { n: string; children: ReactNode; id?: string; titleId: string }) {
+  const s = scene(n);
+  return (
+    <section className="sb-stage" data-stage={n} id={id} aria-labelledby={titleId}>
+      <Plate s={s} className="sb-plate--inline" place="inline" />
+      <div className="sb-stage__copy">
+        <Mark s={s} />
+        <p className="sb-caption">{s.caption}</p>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+const byKey = (key: string) => services.find((s) => s.key === key)!;
+
+function ServiceBlock({ k, titleId }: { k: string; titleId: string }) {
+  const s = byKey(k);
+  return (
+    <div className="sb-service" id={s.anchor}>
+      <p className="sb-kicker">{s.name}</p>
+      <h2 id={titleId} className="sb-title">
+        {s.heading}
+      </h2>
+      <p className="measure">{s.body}</p>
+      <ul className="sb-list type-small">
+        {s.included.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      <p className="sb-links">
+        <Link href={s.cta.href} className="link font-medium">
+          {s.cta.label}
+        </Link>
+        <Link href={`/services/${s.slug}`} className="link">
+          See {s.name}
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+/** Scenes 02–10: text blocks in normal flow beside one sticky frame of storyboard plates. */
+export function Scenes() {
+  const framed = SCENES.slice(1);
+  return (
+    <div className="sb-story surface-inverse" data-story-track>
+      <div className="sb-frame" aria-hidden="true" data-frame>
+        {framed.map((s) => (
+          <Plate key={s.n} s={s} className="sb-plate--framed" place="framed" />
+        ))}
+        <p className="sb-frame__mark" data-frame-mark>
+          <span className="sb-mark__n">02</span> <span className="sb-mark__name">Awakening</span>
+        </p>
+      </div>
+
+      <div className="sb-stages">
+        <Stage n="02" titleId="awakening-title">
+          <h2 id="awakening-title" className="sb-title">
+            The idea starts to move.
+          </h2>
+          <p className="measure">
+            Most brands are built in pieces: a logo from one studio, a website from another, campaigns and search from
+            someone else. We plan them as one line of thought.
+          </p>
+        </Stage>
+
+        <Stage n="03" id="services" titleId="services-title">
+          <h2 id="services-title" className="sb-title">
+            Five services, planned together.
+          </h2>
+          <ul className="sb-index">
+            {services.map((s, i) => (
+              <li key={s.key}>
+                <a href={`#${s.anchor}`}>
+                  <span className="sb-index__n" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="sb-index__name">{s.name}</span>
+                  <span className="sb-index__desc type-small">{s.descriptor}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Stage>
+
+        <Stage n="04" id="process" titleId="process-title">
+          <h2 id="process-title" className="sb-title">
+            One line of thought, from position to enquiry.
+          </h2>
+          <ol className="sb-steps">
+            {processSteps.map((step, i) => (
+              <li key={step.title}>
+                <span className="sb-steps__n" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3>{step.title}</h3>
+                <p className="type-small">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <h3 className="sb-subhead">How we work together</h3>
+          <ul className="sb-list type-small">
+            {collaboration.map((item) => (
+              <li key={item.title}>
+                <span className="font-medium">{item.title}.</span> {item.body}
+              </li>
+            ))}
+          </ul>
+        </Stage>
+
+        <Stage n="05" id="work" titleId="work-title">
+          <h2 id="work-title" className="sb-title">
+            Selected work
+          </h2>
+          <p className="measure">
+            Client projects shown here are published only with the client&apos;s approval, with the facts they have
+            confirmed.
+          </p>
+          {workGateMet && featuredProjects.length > 0 ? (
+            <>
+              <ProjectList projects={featuredProjects} />
+              <p>
+                <Link href="/work" className="link font-medium">
+                  See all work
+                </Link>
+              </p>
+            </>
+          ) : (
+            <ContentPlaceholder
+              title="Featured client projects"
+              publicFallback={<WorkGapNotice />}
+              needed={[
+                "Two to three approved projects (publication level P1 or P2)",
+                "Desktop and mobile screenshots, identity files or campaign assets for each",
+                "Services delivered, year, and the project objective",
+                "Written publication approval reference for each client",
+              ]}
+            >
+              No client work is shown until approved projects are supplied.
+            </ContentPlaceholder>
+          )}
+        </Stage>
+
+        <Stage n="06" titleId="brand-title">
+          <ServiceBlock k="brand" titleId="brand-title" />
+        </Stage>
+
+        <Stage n="07" titleId="web-title">
+          <ServiceBlock k="web" titleId="web-title" />
+        </Stage>
+
+        <Stage n="08" titleId="marketing-title">
+          <ServiceBlock k="marketing" titleId="marketing-title" />
+        </Stage>
+
+        <Stage n="09" titleId="seo-title">
+          <ServiceBlock k="seo" titleId="seo-title" />
+          <ServiceBlock k="growth" titleId="growth-title" />
+        </Stage>
+
+        <Stage n="10" id="credibility" titleId="credibility-title">
+          <h2 id="credibility-title" className="sb-title">
+            Proof, with its sources.
+          </h2>
+          <p className="measure">We would rather show less than claim more. Every result we publish meets three rules:</p>
+          <ul className="sb-list type-small">
+            <li>Published only with the client&apos;s written approval.</li>
+            <li>Stated with a baseline, a time period and a data source.</li>
+            <li>Concept work is always labelled as concept, never as client work.</li>
+          </ul>
+          <ContentPlaceholder
+            title="Verified client outcomes"
+            needed={["Approved outcome figures with baseline, time period and source", "Client approval to publish each figure"]}
+          />
+          <ContentPlaceholder
+            title="Client testimonial"
+            needed={["A client quote in the client's exact words", "Name, role and company as approved", "Written permission to publish"]}
+          />
+        </Stage>
+      </div>
+    </div>
+  );
+}

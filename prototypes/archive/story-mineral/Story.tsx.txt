@@ -1,0 +1,96 @@
+import type { CSSProperties } from "react";
+import { CHAPTER_SPANS, TOTAL, stepsFor } from "./beats";
+import { stages } from "./stages";
+import { StoryPlayer } from "./StoryPlayer";
+
+/**
+ * "From one idea to a living brand": seven stages between the hero and the services sequence.
+ *
+ * Rendered as an ordered list of stages, each with its caption and the steps that happen in it,
+ * readable as is. When motion is allowed (STORY_MOTION_QUERY), the root gets data-story="on" and
+ * the story plays in a pinned stage: a mineral form grown in WebGL (mineral.ts) shows each step in
+ * beats.ts happen as the visitor scrolls, and the caption names the current step (StoryPlayer).
+ * Without motion (reduced motion, short screens), StoryPlayer draws one still of each stage into
+ * its `.story__still`; without JavaScript, the words and steps stand alone. Scrolling is never
+ * intercepted. See docs/olive-story.md.
+ */
+export function Story() {
+  return (
+    <section
+      id="story"
+      className="story"
+      aria-labelledby="story-title"
+      data-story-root
+      style={{ "--story-length": TOTAL } as CSSProperties}
+    >
+      <div className="container-calix story__intro">
+        <p className="type-label text-secondary">How a brand is built</p>
+        <h2 id="story-title" className="mt-4">
+          From one idea to a living brand.
+        </h2>
+        <p className="type-lead measure mt-6">Seven stages, from a single possibility to a system that keeps growing.</p>
+        <p className="story__meta type-small text-secondary">
+          <span>Illustrative sequence, not client work.</span>
+          <a href="#services" className="link">
+            Skip to our services
+          </a>
+        </p>
+      </div>
+
+      <div className="story__track">
+        <div className="story__stage">
+          <ol className="story__stages">
+            {stages.map((stage, si) => (
+              <li key={stage.id} className="story__beat" data-beat={si} aria-labelledby={`story-${stage.id}`}>
+                {/* Static layouts only: a still of the stage, drawn by StoryPlayer. */}
+                <div className="story__still" data-still={si} aria-hidden="true" />
+
+                <div className="story__caption" data-caption={si}>
+                  <p className="story__label">
+                    <span className="story__num" aria-hidden="true">
+                      {String(si + 1).padStart(2, "0")}
+                    </span>
+                    <span className="type-label">{stage.label}</span>
+                  </p>
+                  <h3 id={`story-${stage.id}`} className="story__title">
+                    {stage.title}
+                  </h3>
+                  <p className="type-small">{stage.body}</p>
+                  <p className="story__now type-small" aria-hidden="true" />
+                  {stage.disciplines ? (
+                    <ul className="story__disciplines type-small">
+                      {stage.disciplines.map((d) => (
+                        <li key={d} data-discipline>
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <ol className="story__steps type-small" aria-label={`What happens: ${stage.label}`}>
+                    {stepsFor(si).map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="story__progress" aria-hidden="true">
+            <span className="story__progress-rule" />
+            {CHAPTER_SPANS.slice(1).map(([start]) => (
+              <span key={start} className="story__tick" style={{ left: `${(start / TOTAL) * 100}%` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bridge into S1: the brand built here is what the services sequence carries through every piece. */}
+      <div className="container-calix story__bridge">
+        <p className="font-display text-[26px] leading-snug measure">One idea, grown with care. What follows is how we carry it through every piece.</p>
+      </div>
+
+      <StoryPlayer />
+    </section>
+  );
+}

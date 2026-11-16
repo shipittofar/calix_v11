@@ -1,0 +1,1153 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CALIX Origin Studies</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
+<style>
+  /* Layout: one editorial column; each direction is a full-width live study followed by its notes on a 12-column grid. */
+  :root {
+    --espresso: #2E1E14;
+    --ivory: #F6F1E8;
+    --travertine: #D9C9A8;
+    --gold: #B08D57;
+    --olive: #4B5236;
+    --font-display: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+    --font-text: Jost, Futura, "Helvetica Neue", Arial, sans-serif;
+    --measure: 40rem;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, var(--ivory) 0%, var(--ivory) 30%, var(--travertine) 100%);
+    background-color: var(--ivory);
+    color: var(--espresso);
+    font-family: var(--font-text);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+  }
+
+  @media (min-width: 900px) {
+    .wrap {
+      padding-left: max(48px, env(safe-area-inset-left, 0px));
+      padding-right: max(48px, env(safe-area-inset-right, 0px));
+    }
+  }
+
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(44px, 30px + 4vw, 88px); line-height: 1.02; letter-spacing: -0.015em; }
+  h2 { font-size: clamp(34px, 26px + 2.2vw, 56px); line-height: 1.06; letter-spacing: -0.01em; }
+  h3 { font-size: clamp(22px, 20px + 0.5vw, 26px); line-height: 1.2; }
+  p { margin: 0; }
+
+  .label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--olive);
+  }
+
+  .lead { font-size: clamp(18px, 17px + 0.3vw, 21px); line-height: 1.55; max-width: 34rem; }
+  .small { font-size: 15px; line-height: 1.55; }
+  .muted { color: var(--olive); }
+
+  /* ---------- Header ---------- */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding-block: 28px 0;
+    border-bottom: 1px solid var(--travertine);
+    padding-bottom: 18px;
+  }
+
+  .wordmark { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.22em; font-weight: 600; }
+
+  .intro { display: grid; gap: 28px; padding-block: 72px 56px; }
+  .intro .lead { margin-top: 4px; }
+
+  .stages {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--espresso);
+  }
+
+  .stages li { padding: 14px 12px 4px 0; border-right: 1px solid var(--travertine); min-width: 0; }
+  .stages li + li { padding-left: 12px; }
+  .stages li:last-child { border-right: 0; }
+  .stages .num { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--gold); display: block; }
+  .stages .name { font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-top: 8px; }
+  .stages .what { font-size: 14px; line-height: 1.45; color: var(--olive); display: block; margin-top: 4px; }
+
+  @media (max-width: 860px) {
+    .stages { grid-template-columns: 1fr; }
+    .stages li, .stages li + li { display: grid; grid-template-columns: 56px 1fr; column-gap: 12px; padding: 12px 0; border-right: 0; border-bottom: 1px solid var(--travertine); }
+    .stages .num { grid-row: span 2; font-size: 28px; }
+    .stages .name { margin-top: 2px; }
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding-block: 64px; border-top: 1px solid var(--travertine); }
+  .section-head { display: grid; gap: 14px; margin-bottom: 36px; max-width: 46rem; }
+
+  .two { display: grid; gap: 40px; }
+  @media (min-width: 900px) { .two { grid-template-columns: 1fr 1fr; gap: 56px; } }
+
+  .list { margin: 12px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--espresso); }
+  .list li { padding: 12px 0; border-bottom: 1px solid var(--travertine); font-size: 16px; line-height: 1.55; }
+  .list b { font-weight: 500; }
+
+  /* ---------- Directions ---------- */
+  .direction-head { display: grid; gap: 12px; margin-bottom: 28px; }
+  @media (min-width: 900px) {
+    .direction-head { grid-template-columns: 5fr 7fr; align-items: end; column-gap: 56px; }
+  }
+  .direction-head .letter { font-family: var(--font-display); font-size: 32px; color: var(--gold); line-height: 1; }
+
+  .study {
+    margin: 0;
+    border: 1px solid var(--espresso);
+    background: var(--ivory);
+  }
+
+  .study__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+    background: linear-gradient(180deg, var(--ivory) 0%, var(--travertine) 100%);
+    overflow: hidden;
+  }
+
+  @media (max-width: 640px) { .study__frame { aspect-ratio: 4 / 5; } }
+
+  .study__frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .study__stage {
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    pointer-events: none;
+  }
+  .study__stage .num { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--gold); }
+  .study__stage .name { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+
+  .study__error {
+    position: absolute; inset: auto 16px 16px 16px;
+    font-size: 14px; color: var(--espresso); background: var(--ivory); padding: 10px 12px; border-left: 2px solid var(--espresso);
+  }
+
+  .study__bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--espresso);
+    background: var(--ivory);
+  }
+
+  .btn {
+    font: 500 12px/1 var(--font-text);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--espresso);
+    background: transparent;
+    border: 1px solid var(--espresso);
+    border-radius: 0;
+    min-height: 40px;
+    min-width: 88px;
+    padding: 0 16px;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--espresso); color: var(--ivory); }
+  .btn:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--espresso); outline-offset: 3px; }
+
+  .scrub { display: grid; gap: 4px; min-width: 0; }
+  .scrub__ends { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--olive); }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 24px; background: transparent; margin: 0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--espresso); }
+  input[type="range"]::-moz-range-track { height: 1px; background: var(--espresso); }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -7px; background: var(--gold); border: 1px solid var(--espresso); border-radius: 0; }
+  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: var(--gold); border: 1px solid var(--espresso); border-radius: 0; }
+
+  .pct { font-size: 14px; font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: right; color: var(--olive); }
+
+  @media (max-width: 560px) {
+    .study__bar { grid-template-columns: 1fr auto; row-gap: 10px; }
+    .study__bar .btn { justify-self: start; }
+    .study__bar .scrub { grid-column: 1 / -1; grid-row: 2; }
+  }
+
+  .notes {
+    display: grid;
+    gap: 0;
+    margin-top: 36px;
+    border-top: 1px solid var(--espresso);
+  }
+  @media (min-width: 760px) { .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; } }
+  @media (min-width: 1100px) { .notes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .note { padding: 18px 0 20px; border-bottom: 1px solid var(--travertine); min-width: 0; }
+  .note h4 { margin: 0 0 8px; font: 500 12px/1.3 var(--font-text); letter-spacing: 0.16em; text-transform: uppercase; color: var(--olive); }
+  .note p, .note li { font-size: 15.5px; line-height: 1.55; }
+  .note ul { margin: 0; padding-left: 1.1em; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 10px; }
+  .chip { display: grid; grid-template-columns: 22px auto; column-gap: 8px; align-items: center; font-size: 13px; line-height: 1.25; }
+  .chip i { width: 22px; height: 22px; border: 1px solid var(--espresso); display: block; grid-row: span 2; }
+  .chip small { color: var(--olive); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .chip em { font-style: normal; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--olive); }
+
+  .evolution { margin: 28px 0 0; padding: 0; list-style: none; counter-reset: st; border-top: 1px solid var(--espresso); }
+  .evolution li { display: grid; grid-template-columns: 52px 9.5rem 1fr; column-gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--travertine); font-size: 15.5px; line-height: 1.55; }
+  .evolution .num { font-family: var(--font-display); font-size: 26px; line-height: 1.1; color: var(--gold); }
+  .evolution .name { font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; padding-top: 4px; }
+  @media (max-width: 700px) {
+    .evolution li { grid-template-columns: 44px 1fr; }
+    .evolution li > span:last-child { grid-column: 2; }
+  }
+
+  /* ---------- Comparison ---------- */
+  .table-wrap { overflow-x: auto; border-top: 1px solid var(--espresso); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 15px; line-height: 1.5; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--travertine); }
+  thead th { font: 500 12px/1.3 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); }
+  tbody th { font-weight: 500; width: 9rem; }
+
+  .verdict { display: grid; gap: 16px; max-width: 46rem; }
+  .verdict h3 { font-size: clamp(26px, 22px + 1vw, 34px); }
+
+  footer { padding-block: 48px 72px; border-top: 1px solid var(--travertine); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <span class="wordmark">CALIX</span>
+    <span class="label">Motion direction · Awaiting approval</span>
+  </header>
+
+  <div class="intro">
+    <p class="label">Origin studies · 13 November 2026</p>
+    <h1>One seed, three ways of drawing it.</h1>
+    <p class="lead">The same seven-stage story, from a single form to a living system, rendered in three different visual languages. Each study below is a live prototype of the first two stages, Origin and Awakening. Drag the line to scrub, or press Play.</p>
+    <ol class="stages" aria-label="The seven stages shared by every direction">
+      <li><span class="num">01</span><span class="name">Origin</span><span class="what">A seed-like form emerges.</span></li>
+      <li><span class="num">02</span><span class="name">Awakening</span><span class="what">It unfolds; structures stir inside.</span></li>
+      <li><span class="num">03</span><span class="name">Foundation</span><span class="what">Roots: research and strategy.</span></li>
+      <li><span class="num">04</span><span class="name">Expansion</span><span class="what">Branches: the dimensions of a brand.</span></li>
+      <li><span class="num">05</span><span class="name">Differentiation</span><span class="what">Each part finds its own character.</span></li>
+      <li><span class="num">06</span><span class="name">Identity</span><span class="what">The parts converge into one language.</span></li>
+      <li><span class="num">07</span><span class="name">Ecosystem</span><span class="what">It keeps growing connections.</span></li>
+    </ol>
+  </div>
+
+  <!-- ===================== Analysis ===================== -->
+  <section aria-labelledby="analysis-title">
+    <div class="section-head">
+      <p class="label">Step 1 · The current implementation</p>
+      <h2 id="analysis-title">What stays, what changes.</h2>
+      <p class="small muted">Read from the live code: the scroll engine in StoryPlayer.tsx, the axonometric drawing in plate.ts, the beat timeline in beats.ts, and the site's styles.</p>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Keep</h3>
+        <ul class="list">
+          <li><b>The scroll engine.</b> A sticky stage inside a tall track; scroll position maps straight to a timeline, followed with 90 ms of smoothing. It never intercepts scrolling and renders only while on screen.</li>
+          <li><b>Stateless frames.</b> Every frame is a pure function of the timeline position. The new renderer keeps that contract, so scrubbing backwards, deep links and stills all keep working.</li>
+          <li><b>Captions as real text,</b> with the Gold progress rule and chapter ticks. The animation never carries meaning on its own.</li>
+          <li><b>The fallbacks.</b> Reduced motion and short screens get one still per stage, drawn by the same renderer; without JavaScript the words stand alone. The skip link stays.</li>
+          <li><b>The build switch and checks</b> (STORY_PREVIEW, check-story), so the story can still be turned off and verified.</li>
+          <li><b>The page ground,</b> the Ivory to Travertine gradient, as the environment every direction grows in.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Redesign</h3>
+        <ul class="list">
+          <li><b>The renderer.</b> The 2D axonometric canvas drawing (plate.ts) is replaced by an organic 3D renderer. This is where the work is.</li>
+          <li><b>The timeline.</b> 44 beats in 8 chapters become 7 stages with fewer, longer transformations, so it reads as one continuous growth instead of a sequence of steps.</li>
+          <li><b>The words.</b> Stage titles and captions move from brand-building steps (grid, mark, palette) to the seven-stage growth story, still naming what each stage means for a brand.</li>
+          <li><b>The length.</b> About 10 viewports today. Seven stages fit in about 6 to 7, which keeps the pin from feeling like being held.</li>
+        </ul>
+        <h3 style="margin-top:36px">Decisions this needs</h3>
+        <ul class="list">
+          <li><b>Rendering technology.</b> Recommended: raw WebGL with a signed-distance shader (about 10–15 KB, no library). Alternative: three.js (about 150 KB compressed), only if the approved direction needs mesh-based tools.</li>
+          <li><b>Colours beyond the five.</b> Your brief allows a few earthy additions. They would appear only inside the artwork, never in text, buttons or layout, and need sign-off per direction below.</li>
+          <li><b>Brand rules.</b> The design system and brand skill rule out gradients, shadows, heavy 3D and particles. Your brief overrides them for the story artwork only; I'd record that as a named exception.</li>
+          <li><b>Performance on phones.</b> 3D shading costs GPU time. The plan: adaptive resolution, render only while visible, and stills on low-power devices.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Direction A ===================== -->
+  <section aria-labelledby="dir-a">
+    <div class="direction-head">
+      <div>
+        <p class="letter">A</p>
+        <h2 id="dir-a">Kiln</h2>
+      </div>
+      <p class="lead">The idea as a made object. A matte ceramic seed, irregular and hand-formed, opens along gold seams to reveal a burnished heart, and the first growth rises from it.</p>
+    </div>
+
+    <figure class="study" data-study="kiln">
+      <div class="study__frame">
+        <canvas aria-hidden="true"></canvas>
+        <p class="study__stage" aria-hidden="true"><span class="num">01</span><span class="name">Origin</span></p>
+      </div>
+      <figcaption class="study__bar">
+        <button class="btn" type="button" id="play-kiln" aria-pressed="false">Play</button>
+        <label class="scrub" for="scrub-kiln">
+          <span class="scrub__ends"><span>01 Origin</span><span>02 Awakening</span></span>
+          <input type="range" id="scrub-kiln" min="0" max="1000" value="380" aria-label="Kiln study: position from Origin to Awakening">
+        </label>
+        <output class="pct" for="scrub-kiln">38%</output>
+      </figcaption>
+    </figure>
+
+    <div class="notes">
+      <div class="note">
+        <h4>Shape and form</h4>
+        <p>Soft, fully closed volumes with a hand-formed irregularity: no perfect ellipses, no sharp facets. Parts meet through smooth fillets, the way clay is joined, so growth looks fused rather than attached.</p>
+      </div>
+      <div class="note">
+        <h4>Material and texture</h4>
+        <p>Matte stoneware with a fine mineral grain for the shell; a satin clay glaze on the inside faces; a single burnished gold for the heart and seams. Tendrils in a waxy, matte olive.</p>
+      </div>
+      <div class="note">
+        <h4>Lighting</h4>
+        <p>One soft key from the upper left, like a north-light studio, with ambient occlusion in the folds and a soft cast shadow on the ground. The gold catches a warm reflection of the room.</p>
+      </div>
+      <div class="note">
+        <h4>Motion</h4>
+        <p>Slow, weighted movement. The seed condenses rather than scales in; the shells part like a pod drying open; tendrils grow from their base with a gentle sway. The camera drifts a few degrees, never orbits.</p>
+      </div>
+      <div class="note">
+        <h4>Colour application</h4>
+        <div class="chips">
+          <span class="chip"><i style="background:#F6F1E8"></i>Ivory<small>Shell, lit side</small></span>
+          <span class="chip"><i style="background:#D9C9A8"></i>Travertine<small>Shell grain</small></span>
+          <span class="chip"><i style="background:#B08D57"></i>Antique Gold<small>Heart, seams</small></span>
+          <span class="chip"><i style="background:#4B5236"></i>Olive<small>Tendrils</small></span>
+          <span class="chip"><i style="background:#B07A62"></i>Muted clay<small>#B07A62 · inside faces</small><em>Addition</em></span>
+          <span class="chip"><i style="background:#6B7448"></i>Moss<small>#6B7448 · tendril tips</small><em>Addition</em></span>
+        </div>
+      </div>
+      <div class="note">
+        <h4>References to look at</h4>
+        <ul>
+          <li>Barbara Hepworth and Isamu Noguchi: pierced, hand-finished organic sculpture</li>
+          <li>Hans Coper and Lucie Rie: matte stoneware surfaces and proportion</li>
+          <li>Kintsugi: gold that marks where a form opened</li>
+          <li>Seed pods and husks splitting as they dry</li>
+        </ul>
+      </div>
+    </div>
+
+    <ol class="evolution" aria-label="Kiln through the seven stages">
+      <li><span class="num">01</span><span class="name">Origin</span><span>A matte ceramic seed condenses out of the ground, slightly irregular, its gold seams only just visible.</span></li>
+      <li><span class="num">02</span><span class="name">Awakening</span><span>The shell parts along its seams into three lobes; the gold heart contracts into a core and the first tendrils rise from it.</span></li>
+      <li><span class="num">03</span><span class="name">Foundation</span><span>Below, roots grow as matte ceramic tubes that branch and fuse into a woven base, casting soft shadows across the ground.</span></li>
+      <li><span class="num">04</span><span class="name">Expansion</span><span>Five branches reach out as unequal, hand-thrown forms, each joined to the core by a smooth fillet, never a node-and-line diagram.</span></li>
+      <li><span class="num">05</span><span class="name">Differentiation</span><span>Each branch takes its own glaze and surface: satin clay, raw stone, olive, fine crackle, one burnished bronze.</span></li>
+      <li><span class="num">06</span><span class="name">Identity</span><span>The lobes close around the branches into one vessel-like sculpture, and the gold seams join into a single continuous line.</span></li>
+      <li><span class="num">07</span><span class="name">Ecosystem</span><span>Smaller forms bud from the base and settle around it, linked by fine gold threads, as the camera steps back to show the field.</span></li>
+    </ol>
+  </section>
+
+  <!-- ===================== Direction B ===================== -->
+  <section aria-labelledby="dir-b">
+    <div class="direction-head">
+      <div>
+        <p class="letter">B</p>
+        <h2 id="dir-b">Mineral</h2>
+      </div>
+      <p class="lead">The idea as something that accretes. A frosted, translucent stone, lit from within by gold veins, grows in rings and unfolds translucent blades from its crown.</p>
+    </div>
+
+    <figure class="study" data-study="mineral">
+      <div class="study__frame">
+        <canvas aria-hidden="true"></canvas>
+        <p class="study__stage" aria-hidden="true"><span class="num">01</span><span class="name">Origin</span></p>
+      </div>
+      <figcaption class="study__bar">
+        <button class="btn" type="button" id="play-mineral" aria-pressed="false">Play</button>
+        <label class="scrub" for="scrub-mineral">
+          <span class="scrub__ends"><span>01 Origin</span><span>02 Awakening</span></span>
+          <input type="range" id="scrub-mineral" min="0" max="1000" value="380" aria-label="Mineral study: position from Origin to Awakening">
+        </label>
+        <output class="pct" for="scrub-mineral">38%</output>
+      </figcaption>
+    </figure>
+
+    <div class="notes">
+      <div class="note">
+        <h4>Shape and form</h4>
+        <p>Melted, pebble-like lobes that grow by accretion, layer over layer, like agate or travertine itself. New growth is thin and blade-like, so the mass of the seed and the lightness of the growth contrast.</p>
+      </div>
+      <div class="note">
+        <h4>Material and texture</h4>
+        <p>Frosted, semi-translucent stone: light passes through thin edges and is absorbed in thick ones. Growth bands show on the surface. Fine gold veins sit inside the body, visible through it.</p>
+      </div>
+      <div class="note">
+        <h4>Lighting</h4>
+        <p>Back-lit, so the form glows at its edges against the ground, with a soft frosted highlight in front. The shadow on the ground is lighter and slightly tinted, as light passes through.</p>
+      </div>
+      <div class="note">
+        <h4>Motion</h4>
+        <p>Growth by accumulation: rings spread outward through the stone, veins brighten, blades unfold and lean out with a slow curl. Movement is continuous and slower than A.</p>
+      </div>
+      <div class="note">
+        <h4>Colour application</h4>
+        <div class="chips">
+          <span class="chip"><i style="background:#F6F1E8"></i>Ivory<small>Light through edges</small></span>
+          <span class="chip"><i style="background:#B08D57"></i>Antique Gold<small>Inner veins</small></span>
+          <span class="chip"><i style="background:#4B5236"></i>Olive<small>Dense body</small></span>
+          <span class="chip"><i style="background:#9AA58A"></i>Muted sage<small>#9AA58A · body, blades</small><em>Addition</em></span>
+          <span class="chip"><i style="background:#2F3A2A"></i>Deep forest<small>#2F3A2A · thick core</small><em>Addition</em></span>
+          <span class="chip"><i style="background:#8E877C"></i>Mineral grey<small>#8E877C · growth bands</small><em>Addition</em></span>
+        </div>
+      </div>
+      <div class="note">
+        <h4>References to look at</h4>
+        <ul>
+          <li>Agate and travertine cross-sections: growth recorded as bands</li>
+          <li>Frosted and cast glass sculpture: light held inside a mass</li>
+          <li>Ernst Haeckel's radiolaria plates, read for structure rather than detail</li>
+          <li>Coral and mineral deposits growing by accretion</li>
+        </ul>
+      </div>
+    </div>
+
+    <ol class="evolution" aria-label="Mineral through the seven stages">
+      <li><span class="num">01</span><span class="name">Origin</span><span>A frosted pebble of sage stone takes shape, lit faintly from within by gold veins.</span></li>
+      <li><span class="num">02</span><span class="name">Awakening</span><span>Growth rings spread outward through the stone and translucent blades unfold from its crown.</span></li>
+      <li><span class="num">03</span><span class="name">Foundation</span><span>Roots spread below like soft mineral deposits, the gold veins running down through them into the ground.</span></li>
+      <li><span class="num">04</span><span class="name">Expansion</span><span>The blades branch into translucent fans that overlap; where they overlap, light passes through several layers.</span></li>
+      <li><span class="num">05</span><span class="name">Differentiation</span><span>Each fan settles into its own density and tone: pale sage, deep forest, warm grey, a touch of smoky rose.</span></li>
+      <li><span class="num">06</span><span class="name">Identity</span><span>The layers align so every vein meets at one point; the whole reads as a single stone with one light inside.</span></li>
+      <li><span class="num">07</span><span class="name">Ecosystem</span><span>Smaller stones accrete around it, linked by glowing veins along the ground.</span></li>
+    </ol>
+  </section>
+
+  <!-- ===================== Direction C ===================== -->
+  <section aria-labelledby="dir-c">
+    <div class="direction-head">
+      <div>
+        <p class="letter">C</p>
+        <h2 id="dir-c">Filament</h2>
+      </div>
+      <p class="lead">The idea as a living thread. A seed wound from hundreds of fine filaments breathes, loosens and unwinds into roots and shoots, while spores of gold drift free.</p>
+    </div>
+
+    <figure class="study" data-study="filament">
+      <div class="study__frame">
+        <canvas aria-hidden="true"></canvas>
+        <p class="study__stage" aria-hidden="true"><span class="num">01</span><span class="name">Origin</span></p>
+      </div>
+      <figcaption class="study__bar">
+        <button class="btn" type="button" id="play-filament" aria-pressed="false">Play</button>
+        <label class="scrub" for="scrub-filament">
+          <span class="scrub__ends"><span>01 Origin</span><span>02 Awakening</span></span>
+          <input type="range" id="scrub-filament" min="0" max="1000" value="380" aria-label="Filament study: position from Origin to Awakening">
+        </label>
+        <output class="pct" for="scrub-filament">38%</output>
+      </figcaption>
+    </figure>
+
+    <div class="notes">
+      <div class="note">
+        <h4>Shape and form</h4>
+        <p>No solid surfaces: volume is built from many fine lines wound around a seed-shaped core, like a cocoon or mycelium. Depth comes from line weight and tone, nearer threads darker and heavier.</p>
+      </div>
+      <div class="note">
+        <h4>Material and texture</h4>
+        <p>Silk and fibre: satin threads with a slight sheen, spores as small points of gold. The most graphic of the three, closest to drawing, but drawn in space.</p>
+      </div>
+      <div class="note">
+        <h4>Lighting</h4>
+        <p>Atmospheric rather than modelled: distance fades threads towards Travertine, the nearest threads carry Espresso. A gold glint marks every growing tip.</p>
+      </div>
+      <div class="note">
+        <h4>Motion</h4>
+        <p>Procedural and generative: threads draw themselves in, the cocoon breathes, loosens and unwinds along flow lines. The most alive of the three and the cheapest to render.</p>
+      </div>
+      <div class="note">
+        <h4>Colour application</h4>
+        <div class="chips">
+          <span class="chip"><i style="background:#2E1E14"></i>Espresso<small>Near threads</small></span>
+          <span class="chip"><i style="background:#4B5236"></i>Olive<small>Middle depth</small></span>
+          <span class="chip"><i style="background:#D9C9A8"></i>Travertine<small>Far threads</small></span>
+          <span class="chip"><i style="background:#B08D57"></i>Antique Gold<small>Spores, tips</small></span>
+          <span class="chip"><i style="background:#6B7448"></i>Moss<small>#6B7448 · shoots</small><em>Addition</em></span>
+          <span class="chip"><i style="background:#8C6A43"></i>Muted bronze<small>#8C6A43 · roots</small><em>Addition</em></span>
+        </div>
+      </div>
+      <div class="note">
+        <h4>References to look at</h4>
+        <ul>
+          <li>Mycelium networks and slime-mould growth patterns</li>
+          <li>Silk cocoons and woven basketry</li>
+          <li>Ruth Asawa's looped-wire sculptures: volume made of line</li>
+          <li>Flow-field generative drawing</li>
+        </ul>
+      </div>
+    </div>
+
+    <ol class="evolution" aria-label="Filament through the seven stages">
+      <li><span class="num">01</span><span class="name">Origin</span><span>Hundreds of fine threads wind themselves into a seed-shaped cocoon, which begins to breathe.</span></li>
+      <li><span class="num">02</span><span class="name">Awakening</span><span>The threads loosen; some unwind into roots below and shoots above, and spores of gold drift free.</span></li>
+      <li><span class="num">03</span><span class="name">Foundation</span><span>The roots spread into a mesh, threads meeting and splitting across the ground.</span></li>
+      <li><span class="num">04</span><span class="name">Expansion</span><span>Shoots braid into bundles that reach into space, one bundle for each dimension of the brand.</span></li>
+      <li><span class="num">05</span><span class="name">Differentiation</span><span>Each bundle changes weight, colour and weave: a tight espresso braid, loose moss, bronze, smoky rose.</span></li>
+      <li><span class="num">06</span><span class="name">Identity</span><span>The bundles twist back together into one woven pattern, recognisable as a single strand.</span></li>
+      <li><span class="num">07</span><span class="name">Ecosystem</span><span>The weave reaches beyond the frame, and new cocoons begin to form at its ends.</span></li>
+    </ol>
+  </section>
+
+  <!-- ===================== Comparison ===================== -->
+  <section aria-labelledby="compare-title">
+    <div class="section-head">
+      <p class="label">Side by side</p>
+      <h2 id="compare-title">How they differ.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col">A · Kiln</th><th scope="col">B · Mineral</th><th scope="col">C · Filament</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Feels</th><td>Sculptural, tactile, calm, made by hand</td><td>Experimental, luminous, futuristic</td><td>Generative, alive, intellectual</td></tr>
+          <tr><th scope="row">Brand fit</th><td>Closest to the stone, ceramic and gold of the palette</td><td>Strong, but leans on added greens</td><td>Strong on line and restraint; least "material"</td></tr>
+          <tr><th scope="row">Main risk</th><td>Reading as product sculpture if the growth stages are timid</td><td>Translucency drifting towards a glass "tech" look</td><td>Looking like generic generative art if not art-directed</td></tr>
+          <tr><th scope="row">Rendering</th><td>WebGL shader: opaque surfaces, soft shadows</td><td>WebGL shader: translucency and inner light (heaviest)</td><td>Line rendering, no 3D surfaces (lightest)</td></tr>
+          <tr><th scope="row">Phones</th><td>Good with adaptive resolution</td><td>Needs a simplified mobile shader</td><td>Runs everywhere</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="rec-title">
+    <div class="verdict">
+      <p class="label">Recommendation</p>
+      <h3 id="rec-title">A · Kiln, with Mineral's gold veins as the Differentiation detail.</h3>
+      <p>Kiln speaks the brand's own materials: stone, ceramic, gold, olive. It has real volume without looking like a 3D showcase, and it stays crisp on phones. Borrowing the inner gold veins from Mineral gives Stage 05 its moment of individuality without the translucency risk.</p>
+      <p class="small muted">Directions can also be mixed: for example Kiln's forms with Filament's roots for the Foundation stage. Nothing on the live site has changed. Once a direction is approved, the full seven-stage animation replaces the current renderer inside the existing scroll engine.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p class="small muted">Prototypes cover Stages 01 and 02 only. Colours marked "Addition" are outside the five CALIX colours and are proposed for the artwork only. References are named rather than shown, to avoid reproducing other artists' work.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- Shared GLSL ----------
+  const COMMON = `
+precision highp float;
+uniform vec2 uRes;
+uniform float uTime;
+uniform float uProg;
+const vec3 IVORY = vec3(0.965, 0.945, 0.910);
+const vec3 TRAV  = vec3(0.851, 0.788, 0.659);
+const vec3 ESP   = vec3(0.180, 0.118, 0.078);
+const vec3 GOLD  = vec3(0.690, 0.553, 0.341);
+const vec3 OLIVE = vec3(0.294, 0.322, 0.212);
+float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float noise(vec3 x) {
+  vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash(i), hash(i + vec3(1.0, 0.0, 0.0)), f.x),
+                 mix(hash(i + vec3(0.0, 1.0, 0.0)), hash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+             mix(mix(hash(i + vec3(0.0, 0.0, 1.0)), hash(i + vec3(1.0, 0.0, 1.0)), f.x),
+                 mix(hash(i + vec3(0.0, 1.0, 1.0)), hash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
+float fbm(vec3 p) { float a = 0.5; float s = 0.0; for (int i = 0; i < 3; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
+float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
+mat2 rot(float a) { float c = cos(a); float s = sin(a); return mat2(c, -s, s, c); }
+float sdEllipsoid(vec3 p, vec3 r) { float k0 = length(p / r); float k1 = length(p / (r * r)); return k0 * (k0 - 1.0) / max(k1, 1e-5); }
+float sdCapsule(vec3 p, vec3 a, vec3 b, float r) { vec3 pa = p - a; vec3 ba = b - a; float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0); return length(pa - ba * h) - r; }
+vec2 opU(vec2 a, vec2 b) { return a.x < b.x ? a : b; }
+`;
+
+  // Raymarching, normals, soft shadow and AO, shared by both shader studies (they define map()).
+  const MARCH = `
+vec2 march(vec3 ro, vec3 rd) {
+  float t = 0.0; vec2 res = vec2(-1.0, -1.0);
+  for (int i = 0; i < 96; i++) {
+    vec2 h = map(ro + rd * t);
+    if (h.x < 0.0007 * t + 0.0004) { res = vec2(t, h.y); break; }
+    t += h.x * 0.85;
+    if (t > 6.0) break;
+  }
+  return res;
+}
+vec3 calcN(vec3 p) {
+  vec2 e = vec2(0.0015, -0.0015);
+  return normalize(e.xyy * map(p + e.xyy).x + e.yyx * map(p + e.yyx).x + e.yxy * map(p + e.yxy).x + e.xxx * map(p + e.xxx).x);
+}
+float softSh(vec3 ro, vec3 rd) {
+  // A per-pixel start offset turns shadow banding into fine grain.
+  float r = 1.0; float t = 0.01 + 0.03 * hash(vec3(gl_FragCoord.xy, 1.0)); float ph = 1e10;
+  for (int i = 0; i < 36; i++) {
+    float h = map(ro + rd * t).x;
+    float y = h * h / (2.0 * ph);
+    float d = sqrt(max(h * h - y * y, 0.0));
+    r = min(r, 8.0 * d / max(0.0, t - y));
+    ph = h;
+    t += clamp(h, 0.008, 0.1);
+    if (r < 0.002 || t > 2.5) break;
+  }
+  r = clamp(r, 0.0, 1.0);
+  return r * r * (3.0 - 2.0 * r);
+}
+float calcAO(vec3 p, vec3 n) {
+  float o = 0.0; float s = 1.0;
+  for (int i = 0; i < 5; i++) { float h = 0.01 + 0.06 * float(i); o += (h - map(p + n * h).x) * s; s *= 0.75; }
+  return clamp(1.0 - 2.2 * o, 0.0, 1.0);
+}
+vec3 site(vec2 uv) { return mix(TRAV, IVORY, 0.3 + 0.7 * uv.y); }
+`;
+
+  // ---------- A · Kiln ----------
+  const FRAG_KILN = COMMON + `
+const vec3 CLAY = vec3(0.690, 0.478, 0.384);
+const vec3 MOSS = vec3(0.420, 0.455, 0.282);
+float emerge; float openA; float rise; vec3 corePos;
+vec2 map(vec3 p) {
+  vec3 q = p; q.y -= 0.012 * sin(uTime * 0.7);
+  float bound = length(q - vec3(0.0, 0.15, 0.0)) - 1.0;
+  if (bound > 0.12) return vec2(bound, 0.0);
+  // Hand-formed, not machined: a slight lean, an uneven waist and a broader shoulder.
+  q.x += 0.07 * (q.y + 0.1) * (q.y + 0.1) - 0.02;
+  q.z *= 1.0 + 0.07 * sin(q.y * 3.2 + 0.6);
+  q.x *= 1.0 - 0.05 * q.y;
+  float br = 1.0 + 0.01 * sin(uTime * 1.3);
+  float e = max(emerge, 0.03);
+  float wob = (1.0 - emerge) * 0.07 + 0.009;
+  vec2 res = vec2(1e5, 0.0);
+  // The gold heart: fills the seams while closed, contracts into a core as the shell opens.
+  vec3 cr = mix(vec3(0.312, 0.432, 0.312) * e * br, vec3(0.13, 0.17, 0.13), smoothstep(0.0, 0.7, openA));
+  float core = sdEllipsoid(q - corePos, cr) + 0.01 * (noise(q * 9.0 + uTime * 0.2) - 0.5);
+  // As the pod opens, the heart stays seated on a short stalk from the base.
+  if (openA > 0.001) core = smin(core, sdCapsule(q, vec3(0.0, -0.40 * e, 0.0), corePos, 0.045 * openA), 0.06);
+  res = opU(res, vec2(core, 2.0));
+  // Three shell lobes, hinged at the base.
+  for (int i = 0; i < 3; i++) {
+    float fi = float(i);
+    vec3 s = q;
+    s.xz = rot(fi * 2.0944 + 0.35) * s.xz;
+    vec3 pv = vec3(0.0, -0.40 * e, 0.0);
+    s -= pv; s.xy = rot(-openA * (0.46 + 0.1 * fi)) * s.xy; s += pv;
+    float egg = sdEllipsoid(s, vec3(0.34, 0.46, 0.34) * e * br);
+    float inner = sdEllipsoid(s, vec3(0.305, 0.425, 0.305) * e * br);
+    float sh = max(egg, -inner);
+    float ang = atan(s.z, s.x);
+    sh = max(sh, (abs(ang) - 1.025) * length(s.xz));
+    sh += wob * (fbm(s * 5.0 + fi * 3.7 + uTime * 0.05) - 0.5);
+    res = opU(res, vec2(sh, 1.0));
+  }
+  // Tendrils rising from the heart.
+  if (rise > 0.001) {
+    float td = 1e5;
+    // Five tapering arcs of unequal length that rise, then lean out over the pod like a fountain.
+    for (int i = 0; i < 5; i++) {
+      float fi = float(i); float a = fi * 1.2566 + 0.5 + 0.2 * sin(fi * 3.1);
+      vec3 out3 = vec3(cos(a), 0.0, sin(a));
+      vec3 b0 = corePos + vec3(0.0, 0.11, 0.0);
+      float L = 0.5 * rise * (0.7 + 0.45 * fract(fi * 0.618 + 0.2));
+      vec3 b1 = b0 + normalize(out3 * 0.35 + vec3(0.0, 1.0, 0.0)) * L * 0.45;
+      vec3 b2 = b1 + normalize(out3 * 0.9 + vec3(0.0, 0.45, 0.0)) * L * 0.35;
+      vec3 b3 = b2 + normalize(out3 * 0.8 + vec3(0.0, -0.45, 0.0)) * L * 0.3 + vec3(0.0, 0.012 * sin(uTime * 0.6 + fi), 0.0);
+      float t1 = sdCapsule(q, b0, b1, 0.032 * rise);
+      float t2 = sdCapsule(q, b1, b2, 0.02 * rise);
+      float t3 = sdCapsule(q, b2, b3, 0.009 * rise);
+      td = smin(td, smin(smin(t1, t2, 0.035), t3, 0.025), 0.05);
+    }
+    float joined = smin(td, core, 0.06);
+    if (joined < res.x) res = vec2(joined, td < core ? 3.0 : 2.0);
+  }
+  return res;
+}
+` + MARCH + `
+const vec3 KEY = vec3(-0.55, 0.85, 0.5);
+vec3 shade(vec3 p, vec3 rd, float m) {
+  vec3 n = calcN(p);
+  vec3 L = normalize(KEY);
+  float sh = softSh(p + n * 0.003, L);
+  float occ = calcAO(p, n);
+  vec3 h = normalize(L - rd);
+  float fre = pow(1.0 - clamp(dot(n, -rd), 0.0, 1.0), 3.0);
+  vec3 amb = mix(TRAV * 0.55, IVORY * 0.78, 0.5 + 0.5 * n.y);
+  if (m > 1.5 && m < 2.5) {
+    vec3 r = reflect(rd, n);
+    vec3 env = mix(TRAV * 0.62, IVORY * 1.08, smoothstep(-0.3, 0.7, r.y));
+    vec3 col = GOLD * env * 0.95 + GOLD * clamp(dot(n, L), 0.0, 1.0) * sh * 0.45;
+    col += vec3(1.0, 0.93, 0.8) * pow(clamp(dot(n, h), 0.0, 1.0), 48.0) * sh * 0.8;
+    return col * (0.6 + 0.4 * occ);
+  }
+  vec3 base; float spec; float pw;
+  if (m < 1.5) {
+    float g = fbm(p * 14.0);
+    base = mix(IVORY, TRAV, 0.22 + 0.4 * g);
+    vec3 axis = normalize(vec3(p.x, 0.0, p.z) + vec3(1e-4));
+    float inside = smoothstep(0.1, -0.25, dot(n, axis));
+    base = mix(base, mix(CLAY, TRAV, 0.3), inside * openA);
+    spec = 0.16; pw = 20.0;
+  } else {
+    base = mix(OLIVE, MOSS, 0.5 + 0.5 * sin(p.y * 7.0));
+    spec = 0.25; pw = 26.0;
+  }
+  float wrap = clamp((dot(n, L) + 0.35) / 1.35, 0.0, 1.0);
+  vec3 col = base * (amb * occ * 0.72 + vec3(1.0, 0.97, 0.9) * wrap * sh * 0.72);
+  col += vec3(1.0, 0.96, 0.9) * pow(clamp(dot(n, h), 0.0, 1.0), pw) * spec * sh;
+  col += IVORY * fre * 0.10 * occ;
+  return col;
+}
+void main() {
+  vec2 uv = gl_FragCoord.xy / uRes;
+  vec2 sp = (2.0 * gl_FragCoord.xy - uRes) / uRes.y;
+  emerge = smoothstep(0.0, 0.42, uProg);
+  openA = smoothstep(0.48, 0.86, uProg);
+  rise = smoothstep(0.66, 1.0, uProg);
+  corePos = vec3(0.0, 0.03 * openA, 0.0);
+  float yaw = 0.35 + 0.16 * sin(uTime * 0.11) + 0.45 * uProg;
+  float dist = mix(2.3, 2.7, openA);
+  vec3 ta = vec3(0.0, 0.0 + 0.12 * rise, 0.0);
+  vec3 ro = ta + vec3(sin(yaw) * dist, 0.6, cos(yaw) * dist);
+  vec3 ww = normalize(ta - ro); vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0))); vec3 vv = cross(uu, ww);
+  vec3 rd = normalize(sp.x * uu + sp.y * vv + 2.3 * ww);
+  vec3 bg = site(uv);
+  vec3 col = bg;
+  vec2 hit = march(ro, rd);
+  if (hit.y > 0.0) {
+    col = shade(ro + rd * hit.x, rd, hit.y);
+  } else if (rd.y < 0.0) {
+    float tp = (-0.47 - ro.y) / rd.y; vec3 pg = ro + rd * tp;
+    float r = length(pg.xz);
+    float sh = softSh(pg + vec3(0.0, 0.001, 0.0), normalize(KEY));
+    // Cast shadow plus a soft contact shadow right under the form, so it sits on the ground.
+    float contact = 0.55 * exp(-r * r * 12.0) * emerge;
+    float k = ((1.0 - sh) * exp(-r * 1.2) + contact) * smoothstep(0.0, 0.3, emerge);
+    col = mix(bg, bg * vec3(0.80, 0.75, 0.68), clamp(k, 0.0, 1.0));
+  }
+  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}
+`;
+
+  // ---------- B · Mineral ----------
+  const FRAG_MINERAL = COMMON + `
+const vec3 SAGE = vec3(0.604, 0.647, 0.541);
+const vec3 FOREST = vec3(0.184, 0.227, 0.165);
+const vec3 MINERAL = vec3(0.557, 0.529, 0.486);
+float emerge; float openB; float rise;
+vec2 map(vec3 p) {
+  vec3 q = p; q.y -= 0.02 * sin(uTime * 0.6);
+  float bound = length(q - vec3(0.0, 0.2, 0.0)) - 1.05;
+  if (bound > 0.15) return vec2(bound, 0.0);
+  float e = max(emerge, 0.03);
+  float grow = 1.0 + 0.16 * openB;
+  float d = sdEllipsoid(q - vec3(0.0, -0.05, 0.0), vec3(0.33, 0.38, 0.31) * e * grow);
+  d = smin(d, sdEllipsoid(q - vec3(0.12, 0.08, 0.05) * e, vec3(0.22, 0.26, 0.20) * e * grow), 0.12);
+  d = smin(d, sdEllipsoid(q - vec3(-0.10, 0.02, -0.08) * e, vec3(0.20, 0.24, 0.22) * e * grow), 0.12);
+  d += (0.03 + 0.06 * (1.0 - emerge)) * (fbm(q * 3.5 + vec3(0.0, uTime * 0.04, 0.0)) - 0.5);
+  vec2 res = vec2(d, 1.0);
+  if (rise > 0.001) {
+    float fd = 1e5;
+    for (int i = 0; i < 5; i++) {
+      float fi = float(i); float a = fi * 1.2566 + 0.3;
+      vec3 s = q - vec3(0.0, 0.24 * grow * e, 0.0);
+      s.xz = rot(a) * s.xz;
+      float lean = 0.85 + 0.25 * sin(fi * 1.9);
+      s.xy = rot(-lean * rise) * s.xy;
+      float hgt = 0.68 * rise * (0.75 + 0.35 * fract(fi * 0.618));
+      s.x += 0.55 * s.y * s.y * rise + 0.015 * sin(uTime * 0.5 + fi);
+      float blade = sdEllipsoid(s - vec3(0.0, hgt * 0.5, 0.0), vec3(0.065 * rise + 0.002, hgt * 0.5 + 0.002, 0.012 * rise + 0.002));
+      fd = min(fd, blade);
+    }
+    float j = smin(d, fd, 0.08);
+    if (j < res.x) res = vec2(j, fd < d ? 2.0 : 1.0);
+  }
+  return res;
+}
+` + MARCH + `
+float thickness(vec3 p, vec3 rd) {
+  float t = 0.0;
+  for (int i = 0; i < 24; i++) { float d = map(p + rd * t).x; if (d > 0.0 && t > 0.03) break; t += max(0.02, -d * 0.8 + 0.015); }
+  return t;
+}
+float veins(vec3 p, vec3 rd) {
+  float g = 0.0; float t = 0.02;
+  for (int i = 0; i < 20; i++) {
+    vec3 x = p + rd * t;
+    float inside = step(map(x).x, 0.0);
+    float v = abs(noise(x * 4.2 + vec3(0.0, uTime * 0.05, 0.0)) - 0.5);
+    g += inside * smoothstep(0.018, 0.0, v) * 0.08;
+    t += 0.032;
+  }
+  return g;
+}
+const vec3 KEY = vec3(-0.6, 0.7, 0.5);
+const vec3 BACK = vec3(0.4, 0.55, -0.75);
+vec3 shade(vec3 p, vec3 rd, float m) {
+  vec3 n = calcN(p);
+  vec3 K = normalize(KEY);
+  float fre = pow(1.0 - clamp(dot(n, -rd), 0.0, 1.0), 2.5);
+  vec3 rr = refract(rd, n, 0.72);
+  float th = thickness(p - n * 0.01, rr);
+  vec3 body = m < 1.5 ? mix(SAGE, FOREST, 0.35) : SAGE;
+  vec3 absorb = exp(-th * vec3(2.2, 1.6, 2.6) * (m < 1.5 ? 0.85 : 0.5));
+  vec3 trans = m < 1.5 ? mix(body * 0.55, IVORY * 1.04, absorb * 0.92) : mix(SAGE * 0.85, IVORY, absorb * 0.45);
+  float back = pow(clamp(dot(rd, normalize(BACK)), 0.0, 1.0), 2.0) * 0.4 + 0.28;
+  vec3 col = trans * (0.55 + back);
+  if (m < 1.5) {
+    float band = 0.5 + 0.5 * sin(length(p * vec3(1.0, 0.85, 1.0)) * 46.0 - fbm(p * 3.0) * 6.0);
+    col = mix(col, mix(col, MINERAL, 0.55), band * openB * 0.6);
+  }
+  col *= 0.75 + 0.35 * clamp(dot(n, K), 0.0, 1.0);
+  vec3 h = normalize(K - rd);
+  col += IVORY * pow(clamp(dot(n, h), 0.0, 1.0), 12.0) * 0.25;
+  col = mix(col, IVORY, fre * 0.5);
+  col += GOLD * veins(p - n * 0.01, rr) * (0.6 + 1.5 * openB) * (m < 1.5 ? 1.0 : 0.4);
+  return col;
+}
+void main() {
+  vec2 uv = gl_FragCoord.xy / uRes;
+  vec2 sp = (2.0 * gl_FragCoord.xy - uRes) / uRes.y;
+  emerge = smoothstep(0.0, 0.42, uProg);
+  openB = smoothstep(0.46, 0.9, uProg);
+  rise = smoothstep(0.62, 1.0, uProg);
+  float yaw = -0.4 + 0.14 * sin(uTime * 0.09) + 0.35 * uProg;
+  float dist = mix(2.2, 2.75, rise);
+  vec3 ta = vec3(0.0, 0.05 + 0.15 * rise, 0.0);
+  vec3 ro = ta + vec3(sin(yaw) * dist, 0.45, cos(yaw) * dist);
+  vec3 ww = normalize(ta - ro); vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0))); vec3 vv = cross(uu, ww);
+  vec3 rd = normalize(sp.x * uu + sp.y * vv + 2.3 * ww);
+  vec3 bg = site(uv);
+  vec3 col = bg;
+  vec2 hit = march(ro, rd);
+  if (hit.y > 0.0) {
+    col = shade(ro + rd * hit.x, rd, hit.y);
+  } else if (rd.y < 0.0) {
+    float tp = (-0.44 - ro.y) / rd.y; vec3 pg = ro + rd * tp;
+    float r = length(pg.xz);
+    float sh = softSh(pg + vec3(0.0, 0.001, 0.0), normalize(KEY));
+    float k = (1.0 - sh) * exp(-r * 1.1) * 0.7 * smoothstep(0.0, 0.3, emerge);
+    col = mix(bg, mix(bg * vec3(0.84, 0.82, 0.74), SAGE, 0.15), clamp(k, 0.0, 1.0));
+  }
+  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}
+`;
+
+  const VERT = "attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }";
+
+  // ---------- WebGL study ----------
+  function glStudy(canvas, frag, onError) {
+    const gl = canvas.getContext("webgl", { antialias: false, alpha: false, preserveDrawingBuffer: false, powerPreference: "high-performance" });
+    if (!gl) { onError("WebGL is not available in this browser, so this study cannot render."); return null; }
+    const compile = (type, src) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { const log = gl.getShaderInfoLog(s); console.error(log); throw new Error(log || "Shader failed to compile"); }
+      return s;
+    };
+    let prog;
+    try {
+      prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, frag));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog) || "Link failed");
+    } catch (err) {
+      onError("This study could not start: " + String(err.message || err).split("\n")[0]);
+      return null;
+    }
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "a");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uRes = gl.getUniformLocation(prog, "uRes");
+    const uTime = gl.getUniformLocation(prog, "uTime");
+    const uProg = gl.getUniformLocation(prog, "uProg");
+    let scale = Math.min(window.devicePixelRatio || 1, 1.5) * 0.62;
+    const resize = () => {
+      const w = Math.max(1, Math.round(canvas.clientWidth * scale));
+      const h = Math.max(1, Math.round(canvas.clientHeight * scale));
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    };
+    return {
+      draw(p, t) {
+        resize();
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform2f(uRes, canvas.width, canvas.height);
+        gl.uniform1f(uTime, t);
+        gl.uniform1f(uProg, p);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      },
+      // Adaptive resolution: step down when frames are slow, never below a crisp-enough floor.
+      adapt(avgMs) {
+        if (avgMs > 34 && scale > 0.34) scale *= 0.88;
+        else if (avgMs < 18 && scale < Math.min(window.devicePixelRatio || 1, 1.5) * 0.8) scale *= 1.04;
+      },
+    };
+  }
+
+  // ---------- C · Filament (2D canvas, projected 3D) ----------
+  function filamentStudy(canvas) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    let seed = 7;
+    const rand = () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const field = (x, y, z) => [
+      Math.sin(y * 3.1 + z * 1.7) + Math.cos(z * 2.3 - x * 1.1) * 0.6,
+      Math.sin(z * 2.7 + x * 1.9) + Math.cos(x * 3.3 + y * 0.7) * 0.6,
+      Math.sin(x * 2.9 + y * 2.1) + Math.cos(y * 1.3 - z * 2.5) * 0.6,
+    ];
+    const N = 104, M = 64, K = 46;
+    const strands = [];
+    for (let i = 0; i < N; i++) {
+      const phase = rand() * Math.PI * 2;
+      const turns = 1.1 + rand() * 1.4;
+      const up = rand() < 0.5;
+      const jit = 0.03 + rand() * 0.05;
+      const pts = [];
+      for (let j = 0; j < M; j++) {
+        const s = j / (M - 1);
+        const th = (up ? 1 - s : s) * Math.PI * 0.86 + Math.PI * 0.07;
+        const ph = phase + s * turns * Math.PI * 2;
+        const r = 1 + jit * Math.sin(ph * 3 + i);
+        pts.push([Math.sin(th) * Math.cos(ph) * 0.3 * r, Math.cos(th) * 0.41 * r, Math.sin(th) * Math.sin(ph) * 0.3 * r]);
+      }
+      // Some strands keep growing past the cocoon: up-ending ones become shoots, the others roots.
+      const grows = rand() < 0.42;
+      const growth = [];
+      if (grows) {
+        let p = pts[M - 1].slice();
+        const end = pts[M - 1];
+        const len = Math.hypot(end[0], end[1], end[2]) || 1;
+        let v = [end[0] / len, end[1] / len, end[2] / len];
+        const shoot = end[1] > 0;
+        const step = shoot ? 0.0105 : 0.015;
+        for (let k = 0; k < K; k++) {
+          const f = field(p[0] * 2.2 + i, p[1] * 2.2, p[2] * 2.2);
+          const pull = shoot ? [0, 1, 0] : [0, k < 14 ? -1 : -0.25, 0];
+          v = [v[0] * 0.82 + f[0] * 0.09 + pull[0] * 0.12, v[1] * 0.82 + f[1] * 0.05 + pull[1] * 0.12, v[2] * 0.82 + f[2] * 0.09 + pull[2] * 0.12];
+          const vl = Math.hypot(v[0], v[1], v[2]) || 1;
+          v = [v[0] / vl, v[1] / vl, v[2] / vl];
+          p = [p[0] + v[0] * step, Math.max(p[1] + v[1] * step, -0.72), p[2] + v[2] * step];
+          growth.push(p);
+        }
+      }
+      strands.push({ pts, growth, shoot: grows && pts[M - 1][1] > 0, delay: rand(), gdelay: rand(), wob: rand() * 6.28 });
+    }
+    const spores = [];
+    for (let i = 0; i < 120; i++) {
+      const a = rand() * Math.PI * 2, b = Math.acos(2 * rand() - 1), r = 0.45 + rand() * 0.6;
+      spores.push({ p: [Math.sin(b) * Math.cos(a) * r, Math.cos(b) * r * 0.8 + 0.1, Math.sin(b) * Math.sin(a) * r], v: [(rand() - 0.5) * 0.02, 0.01 + rand() * 0.02, (rand() - 0.5) * 0.02], d: rand() });
+    }
+
+    const C = { esp: "#2E1E14", olive: "#4B5236", trav: "#D9C9A8", gold: "#B08D57", moss: "#6B7448", bronze: "#8C6A43" };
+    const sm = (a, b, x) => { const t = Math.min(Math.max((x - a) / (b - a), 0), 1); return t * t * (3 - 2 * t); };
+
+    return {
+      draw(prog, time) {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const W = canvas.clientWidth, H = canvas.clientHeight;
+        if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, W, H);
+        const emerge = sm(0, 0.42, prog), open = sm(0.46, 0.9, prog), rise = sm(0.62, 1, prog);
+        const yaw = 0.5 + 0.2 * Math.sin(time * 0.12) + 0.55 * prog, pitch = 0.3;
+        const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), spn = Math.sin(pitch);
+        const focal = Math.min(W, H * 1.4) * 1.05;
+        const camZ = 2.5 + 0.35 * rise;
+        const ox = W / 2, oy = H * (0.52 - 0.06 * rise);
+        const proj = (x, y, z) => {
+          const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+          const y1 = y * cp - z1 * spn, z2 = y * spn + z1 * cp;
+          const zz = z2 + camZ;
+          return [ox + (x1 * focal) / zz, oy - (y1 * focal) / zz, z2];
+        };
+        // Depth bins drawn far to near; each bin is one path, one colour, one width.
+        const bins = [
+          { c: C.trav, w: 0.55, p: new Path2D() },
+          { c: C.bronze, w: 0.7, p: new Path2D() },
+          { c: C.olive, w: 0.85, p: new Path2D() },
+          { c: C.esp, w: 1.1, p: new Path2D() },
+        ];
+        const gbins = { shoot: [{ c: C.olive, w: 0.75, p: new Path2D() }, { c: C.moss, w: 1.2, p: new Path2D() }], root: [{ c: C.trav, w: 0.75, p: new Path2D() }, { c: C.bronze, w: 1.15, p: new Path2D() }] };
+        const binOf = (z) => (z > 0.12 ? 0 : z > 0.0 ? 1 : z > -0.17 ? 2 : 3);
+        const breathe = 1 + 0.014 * Math.sin(time * 1.2);
+        const loosen = 1 + 0.12 * open;
+        const tips = [];
+        strands.forEach((s, i) => {
+          const local = Math.min(Math.max(emerge * 1.45 - s.delay * 0.45, 0), 1);
+          const count = Math.floor(local * (M - 1));
+          if (count < 1) return;
+          const amp = 0.035 * open;
+          let prev = null;
+          for (let j = 0; j <= count; j++) {
+            const q = s.pts[j];
+            const wob = 1 + amp * Math.sin(time * 0.5 + s.wob + j * 0.2);
+            const pt = proj(q[0] * breathe * loosen * wob, q[1] * breathe * loosen, q[2] * breathe * loosen * wob);
+            if (prev) { const b = bins[binOf((prev[2] + pt[2]) / 2)]; b.p.moveTo(prev[0], prev[1]); b.p.lineTo(pt[0], pt[1]); }
+            prev = pt;
+          }
+          if (s.growth.length && count === M - 1) {
+            const g = Math.min(Math.max(rise * 1.35 - s.gdelay * 0.35, 0), 1);
+            const gc = Math.floor(g * s.growth.length);
+            const set = s.shoot ? gbins.shoot : gbins.root;
+            for (let k = 0; k < gc; k++) {
+              const q = s.growth[k];
+              const sway = 0.02 * Math.sin(time * 0.6 + s.wob + k * 0.15) * (k / s.growth.length);
+              const pt = proj(q[0] * loosen + sway, q[1], q[2] * loosen);
+              const b = set[pt[2] > 0.15 ? 0 : 1];
+              b.p.moveTo(prev[0], prev[1]); b.p.lineTo(pt[0], pt[1]);
+              prev = pt;
+            }
+            if (gc > 2) tips.push(prev);
+          }
+        });
+        ctx.lineCap = "round";
+        [bins[0], gbins.shoot[0], gbins.root[0], bins[1], bins[2], gbins.root[1], gbins.shoot[1], bins[3]].forEach((b) => {
+          ctx.strokeStyle = b.c; ctx.lineWidth = b.w; ctx.stroke(b.p);
+        });
+        // Gold glints at growing tips, then drifting spores.
+        ctx.fillStyle = C.gold;
+        tips.forEach((t) => { ctx.beginPath(); ctx.arc(t[0], t[1], 2.1, 0, Math.PI * 2); ctx.fill(); });
+        if (open > 0.01) {
+          spores.forEach((s) => {
+            const a = Math.min(Math.max(open * 1.4 - s.d * 0.4, 0), 1);
+            if (a <= 0) return;
+            const tt = time * 0.6 + s.d * 10;
+            const x = s.p[0] + s.v[0] * tt % 0.6, y = ((s.p[1] + s.v[1] * tt + 0.8) % 1.6) - 0.6, z = s.p[2] + s.v[2] * tt % 0.6;
+            const pt = proj(x, y, z);
+            ctx.globalAlpha = a * (y > 0.8 ? 0.4 : 1);
+            ctx.fillStyle = s.d > 0.7 ? C.esp : C.gold;
+            ctx.beginPath(); ctx.arc(pt[0], pt[1], pt[2] < 0 ? 1.7 : 1.1, 0, Math.PI * 2); ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+        }
+      },
+      adapt() {},
+    };
+  }
+
+  // ---------- Controller ----------
+  const STAGES = [["01", "Origin"], ["02", "Awakening"]];
+  const DURATION = 14; // seconds for Origin → Awakening when playing
+  const studies = [];
+
+  document.querySelectorAll("[data-study]").forEach((fig) => {
+    const kind = fig.getAttribute("data-study");
+    const canvas = fig.querySelector("canvas");
+    const frame = fig.querySelector(".study__frame");
+    const range = fig.querySelector('input[type="range"]');
+    const button = fig.querySelector("button");
+    const out = fig.querySelector("output");
+    const num = fig.querySelector(".study__stage .num");
+    const name = fig.querySelector(".study__stage .name");
+    const showError = (msg) => {
+      const p = document.createElement("p");
+      p.className = "study__error";
+      p.textContent = msg;
+      frame.append(p);
+    };
+    const renderer = kind === "filament" ? filamentStudy(canvas) : glStudy(canvas, kind === "kiln" ? FRAG_KILN : FRAG_MINERAL, showError);
+    if (!renderer) { button.disabled = true; return; }
+    const st = { renderer, prog: Number(range.value) / 1000, playing: false, hold: 0, visible: false, dirty: true, range, button, out, num, name, frames: [], last: 0 };
+    const sync = () => {
+      range.value = String(Math.round(st.prog * 1000));
+      out.textContent = Math.round(st.prog * 100) + "%";
+      const s = STAGES[st.prog < 0.47 ? 0 : 1];
+      if (num.textContent !== s[0]) { num.textContent = s[0]; name.textContent = s[1]; }
+    };
+    range.addEventListener("input", () => {
+      st.prog = Number(range.value) / 1000;
+      st.playing = false; button.textContent = "Play"; button.setAttribute("aria-pressed", "false");
+      st.dirty = true; sync(); kick();
+    });
+    button.addEventListener("click", () => {
+      st.playing = !st.playing;
+      if (st.playing && st.prog >= 0.999) st.prog = 0.04;
+      button.textContent = st.playing ? "Pause" : "Play";
+      button.setAttribute("aria-pressed", String(st.playing));
+      st.dirty = true; kick();
+    });
+    new IntersectionObserver(([e]) => { st.visible = e.isIntersecting; if (st.visible) { st.dirty = true; kick(); } }, { rootMargin: "120px 0px" }).observe(fig);
+    sync();
+    studies.push(st);
+  });
+
+  let raf = 0, lastNow = 0;
+  const start = performance.now();
+  function kick() { if (!raf) raf = requestAnimationFrame(loop); }
+  function loop(now) {
+    raf = 0;
+    const dt = lastNow ? Math.min((now - lastNow) / 1000, 0.1) : 1 / 60;
+    lastNow = now;
+    // Ambient time drives breathing and drift; under reduced motion it stands still.
+    const t = reduceMotion ? 0 : (now - start) / 1000;
+    let any = false;
+    studies.forEach((st) => {
+      if (!st.visible) return;
+      if (st.playing) {
+        if (st.prog < 1) st.prog = Math.min(1, st.prog + dt / DURATION);
+        else if ((st.hold += dt) > 2.5) { st.hold = 0; st.prog = 0.04; }
+        st.range.value = String(Math.round(st.prog * 1000));
+        st.out.textContent = Math.round(st.prog * 100) + "%";
+        const s = STAGES[st.prog < 0.47 ? 0 : 1];
+        if (st.num.textContent !== s[0]) { st.num.textContent = s[0]; st.name.textContent = s[1]; }
+      }
+      if (st.playing || st.dirty || !reduceMotion) {
+        st.renderer.draw(st.prog, t);
+        // WebGL draws return before the GPU finishes, so judge cost by the frame interval.
+        st.frames.push(dt * 1000);
+        if (st.frames.length > 20) { const avg = st.frames.reduce((a, b) => a + b, 0) / st.frames.length; st.renderer.adapt(avg); st.frames.length = 0; }
+        st.dirty = false;
+        any = true;
+      }
+      if (st.playing || !reduceMotion) any = true;
+    });
+    if (any) kick();
+    else lastNow = 0;
+  }
+  kick();
+})();
+</script>

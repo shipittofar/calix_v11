@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CALIX Scroll Prototype</title>
+<meta name="description" content="Prototype of the CALIX scroll-driven story, chapters 1 to 3: Origin, Awakening, Foundation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="img/origin.webp">
+<style>
+  :root {
+    --espresso: #2E1E14; --ivory: #F6F1E8; --travertine: #D9C9A8; --gold: #B08D57; --olive: #4B5236;
+    --serif: "Cormorant Garamond", Georgia, serif; --sans: "Jost", system-ui, sans-serif;
+    --gutter: clamp(20px, 6vw, 96px);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--espresso); }
+  body { margin: 0; background: var(--espresso); color: var(--ivory); font-family: var(--sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+  /* Header: never animates. */
+  .hdr { position: fixed; inset: 0 0 auto 0; z-index: 20; height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); background: var(--espresso); border-bottom: 1px solid var(--olive); }
+  .hdr img { height: 22px; width: auto; display: block; }
+  .hdr nav { display: flex; gap: 32px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--travertine); }
+  .hdr nav a { text-decoration: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; font: 500 13px/1 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; border: 1px solid var(--ivory); }
+  .btn--solid { background: var(--ivory); color: var(--espresso); }
+  .hdr .btn { min-height: 40px; padding: 0 16px; }
+
+  .kicker { margin: 0 0 18px; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--travertine); }
+  .kicker b { color: var(--gold); font-weight: 500; margin-right: 10px; }
+  .display { margin: 0; font: 500 clamp(44px, 6.2vw, 100px)/0.98 var(--serif); letter-spacing: -0.01em; }
+  .title { margin: 0; font: 500 clamp(32px, 3.4vw, 54px)/1.04 var(--serif); }
+  .lead { margin: 22px 0 0; font-size: clamp(16px, 1.25vw, 19px); color: var(--travertine); max-width: 34em; }
+  .caption { margin: 0; font: italic 400 17px/1.4 var(--serif); color: var(--travertine); }
+  .small { font-size: 14px; color: var(--travertine); }
+
+  /* ---------- Static story: reduced motion, no JavaScript, short screens ---------- */
+  .static-story { padding: 64px 0 0; }
+  .st { display: grid; gap: 32px; align-items: center; padding: 56px var(--gutter); }
+  .st img { width: min(100%, 420px); height: auto; display: block; }
+  .st ol { padding-left: 1.2em; }
+  @media (min-width: 900px) { .st { grid-template-columns: 1fr 1fr; } }
+  html.motion .static-story { display: none; }
+  html:not(.motion) .stage, html:not(.motion) .rail { display: none; }
+
+  /* ---------- Motion stage ---------- */
+  .stage { position: relative; height: 100vh; height: 100svh; overflow: hidden; }
+  #world { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.07; mix-blend-mode: overlay; }
+  .tx { position: absolute; z-index: 2; }
+  .tl { display: block; overflow: hidden; padding-bottom: 0.06em; }
+  .tl > span { display: block; will-change: transform; }
+  .tl--fade { overflow: visible; }
+
+  .ch1 { left: var(--gutter); top: 50%; transform: translateY(-46%); width: min(600px, 48vw); }
+  .ch1 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .ch1 .note { margin-top: 18px; }
+  .ch1 .caption { margin-top: 28px; }
+  .ch2 { left: var(--gutter); top: 50%; transform: translateY(-50%); width: min(470px, 36vw); }
+  .ch2 p.body { margin: 22px 0 0; color: var(--ivory); }
+  .ch2 .caption { margin-top: 22px; }
+  .ch3 { left: var(--gutter); top: calc(64px + 7vh); width: min(440px, 30vw); }
+  .ch3 .title { font-size: clamp(28px, 2.6vw, 42px); }
+  .step { position: absolute; z-index: 2; width: min(220px, 15vw); padding: 10px 12px; background: var(--espresso); border-left: 1px solid var(--gold); opacity: 0; }
+  .step h3 { margin: 0 0 4px; font: 500 22px/1.1 var(--serif); }
+  .step h3 span { color: var(--gold); font: 500 12px/1 var(--sans); letter-spacing: 0.14em; margin-right: 8px; vertical-align: 3px; }
+  .step p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--travertine); }
+  .teaser { left: var(--gutter); top: 85%; }
+
+  .st-logo { width: min(100%, 320px) !important; }
+  .ch4 { left: var(--gutter); top: calc(64px + 7vh); width: min(440px, 32vw); }
+  .svc { left: var(--gutter); top: 42%; width: min(440px, 34vw); }
+  .svc__n { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.18em; color: var(--gold); }
+  .svc__name { margin: 0 0 10px; font: 500 clamp(28px, 2.8vw, 44px)/1.05 var(--serif); }
+  .svc .caption { margin: 0 0 10px; }
+  .svc .small { margin: 0 0 12px; }
+  .svc__link { margin: 0; }
+  .link { display: inline-block; padding: 8px 0; color: var(--ivory); font-size: 14px; letter-spacing: 0.04em; text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 5px; }
+  .pts span { position: absolute; z-index: 2; transform: translateX(-50%); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--travertine); white-space: nowrap; opacity: 0; }
+  .pts b { color: var(--gold); font-weight: 500; }
+  .pts i { font-style: normal; }
+  .pts span.on { color: var(--ivory); }
+  .illus { position: absolute; z-index: 2; margin: 0; padding: 5px 9px; background: var(--espresso); color: var(--travertine); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0; }
+  .ch5 { left: var(--gutter); top: calc(64px + 9vh); width: min(420px, 30vw); }
+  .ch5 .body, .ch6 .body, .ch7 .body { margin: 20px 0 0; color: var(--travertine); }
+  .slot { position: absolute; z-index: 2; margin: 0; width: 190px; text-align: center; font-size: 12px; }
+  .logo-id { position: absolute; z-index: 2; left: 30%; top: 50%; height: min(46vh, 460px); width: auto; transform: translate(-50%, -50%); opacity: 0; }
+  .ch6 { left: 54%; top: 50%; transform: translateY(-50%); width: min(460px, 36vw); }
+  .ch6 ul { margin: 18px 0 0; padding: 0; list-style: none; }
+  .ch6 li { padding: 10px 0; border-top: 1px solid var(--olive); }
+  .ch7 { left: var(--gutter); top: 50%; transform: translateY(-50%); width: min(500px, 38vw); }
+  .ch7 .body { margin-bottom: 28px; }
+  @media (max-width: 1099px) { .rail button span { display: none; } }
+
+  .rail { position: fixed; z-index: 15; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 22px; align-items: center; padding: 8px 14px; background: var(--espresso); }
+  .rail button { all: unset; cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--travertine); opacity: 0.55; padding: 6px 2px; }
+  .rail button b { color: var(--gold); font-weight: 500; margin-right: 6px; }
+  .rail button[aria-current="step"] { opacity: 1; color: var(--ivory); }
+  .rail button:focus-visible { outline: 2px solid var(--gold); }
+  .rail .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--gold); transform-origin: left; transform: scaleX(0); }
+
+  .after { min-height: 70vh; display: grid; align-content: center; gap: 16px; padding: 96px var(--gutter); border-top: 1px solid var(--olive); }
+  .after p { max-width: 40em; margin: 0; color: var(--travertine); }
+
+  @media (max-width: 759px) {
+    .hdr nav { display: none; }
+    .ch1 { top: calc(64px + 5vh); transform: none; width: auto; right: var(--gutter); }
+    .ch1 .caption, .ch1 .note { display: none; }
+    .ch2 { top: auto; bottom: 12vh; transform: none; width: auto; right: var(--gutter); }
+    .ch3 { top: calc(64px + 3vh); width: auto; right: var(--gutter); padding: 12px 16px; background: var(--espresso); border-left: 1px solid var(--gold); }
+    .step { left: var(--gutter) !important; right: var(--gutter); top: auto !important; bottom: 76px; width: auto; padding: 14px 16px; background: var(--espresso); border-left: 1px solid var(--gold); }
+    .teaser { top: auto; bottom: 76px; right: var(--gutter); }
+    .rail { gap: 14px; }
+    .ch4 { top: calc(64px + 2vh); width: auto; right: var(--gutter); }
+    .ch4 .title, .svc__desc, .pts i, .slot { display: none; }
+    .svc { top: auto; bottom: 74px; width: auto; right: var(--gutter); }
+    .svc__name { font-size: 26px; margin-bottom: 6px; }
+    .svc .caption { font-size: 16px; margin-bottom: 0; }
+    .ch5 { top: calc(64px + 3vh); width: auto; right: var(--gutter); }
+    .ch5 .body { font-size: 14px; }
+    .logo-id { left: 50%; top: 31%; height: 34vh; }
+    .ch6 { left: var(--gutter); right: var(--gutter); top: auto; bottom: 70px; transform: none; width: auto; }
+    .ch6 .body { font-size: 14px; margin-top: 10px; }
+    .ch6 ul { margin-top: 8px; }
+    .ch6 li { padding: 6px 0; font-size: 13px; }
+    .ch7 { top: auto; bottom: 80px; transform: none; width: auto; right: var(--gutter); }
+    .rail button span { display: none; }
+  }
+</style>
+</head>
+<body>
+<script>
+  // Motion only with JavaScript, a tall enough screen and no reduced-motion preference; otherwise the static story shows.
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches && innerHeight >= 520) document.documentElement.classList.add("motion");
+</script>
+
+<header class="hdr">
+  <a href="#" aria-label="CALIX home"><img src="img/wordmark-ivory.png" alt="CALIX" width="825" height="254"></a>
+  <nav aria-label="Main"><a href="#">Services</a><a href="#">Work</a><a href="#">Studio</a><a href="#">Contact</a></nav>
+  <a class="btn" href="#">Start a project</a>
+</header>
+
+<main>
+  <!-- ======================= Motion stage (pinned, scrubbed by scroll) ======================= -->
+  <section class="stage" id="stage" aria-label="CALIX story, seven chapters">
+    <canvas id="world" aria-hidden="true"></canvas>
+    <div class="grain" aria-hidden="true" id="grain"></div>
+
+    <!-- 01 Origin: visible on first paint, never gated; leaves as the camera dives into the seed. -->
+    <div class="tx ch1">
+      <p class="kicker tl" data-out="0.20 0.40"><span><b>01</b>Origin</span></p>
+      <h1 class="display">
+        <span class="tl" data-out="0.24 0.44"><span>Make Your Brand</span></span>
+        <span class="tl" data-out="0.27 0.47"><span>Impossible</span></span>
+        <span class="tl" data-out="0.30 0.50"><span>to Ignore.</span></span>
+      </h1>
+      <p class="lead tl tl--fade" data-out="0.30 0.48"><span>Strategy, design, technology and marketing — connected to build stronger brands and better digital outcomes.</span></p>
+      <div class="actions tl tl--fade" data-out="0.33 0.50"><span style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn--solid" href="#">Start a project</a><a class="btn" href="#">Explore our work</a></span></div>
+      <p class="note small tl tl--fade" data-out="0.33 0.50"><span>Reply time to be confirmed.</span></p>
+      <p class="caption tl tl--fade" data-out="0.18 0.36"><span>An idea appears — a single point of light in a quiet space.</span></p>
+    </div>
+
+    <!-- 02 Awakening -->
+    <div class="tx ch2">
+      <p class="kicker tl" data-in="1.50 1.64" data-out="2.24 2.40"><span><b>02</b>Awakening</span></p>
+      <h2 class="title">
+        <span class="tl" data-in="1.54 1.70" data-out="2.22 2.38"><span>The idea</span></span>
+        <span class="tl" data-in="1.58 1.74" data-out="2.24 2.40"><span>starts to move.</span></span>
+      </h2>
+      <p class="body tl tl--fade" data-in="1.68 1.86" data-out="2.18 2.34"><span>Most brands are built in pieces: a logo from one studio, a website from another, campaigns and search from someone else. We plan them as one line of thought.</span></p>
+      <p class="caption tl tl--fade" data-in="1.76 1.92" data-out="2.16 2.32"><span>Light begins to move through the material.</span></p>
+    </div>
+
+    <!-- 03 Foundation -->
+    <div class="tx ch3">
+      <p class="kicker tl" data-in="2.82 2.96" data-out="4.40 4.54"><span><b>03</b>Foundation</span></p>
+      <h2 class="title">
+        <span class="tl" data-in="2.86 3.02" data-out="4.40 4.54"><span>One line of thought,</span></span>
+        <span class="tl" data-in="2.90 3.06" data-out="4.42 4.56"><span>from position to enquiry.</span></span>
+      </h2>
+    </div>
+    <div class="step" data-step="0"><h3><span>1</span>Position</h3><p>We start with the business: who you serve, what you are competing against and what a good enquiry looks like.</p></div>
+    <div class="step" data-step="1"><h3><span>2</span>Design</h3><p>Identity, messaging and page structure are designed together, so every decision traces back to the position.</p></div>
+    <div class="step" data-step="2"><h3><span>3</span>Build</h3><p>Websites and campaigns are built to the design, with accessibility, performance and search structure as requirements.</p></div>
+    <div class="step" data-step="3"><h3><span>4</span>Grow</h3><p>After launch we measure what brings qualified enquiries and improve it, in agreed, reviewable steps.</p></div>
+    <p class="tx teaser caption tl tl--fade" data-in="4.12 4.30" data-out="4.36 4.48"><span>Five services rise from this line.</span></p>
+    <!-- 04 Services: each service rises from its point on the ground line into a window of light. -->
+    <div class="tx ch4">
+      <p class="kicker tl" data-in="4.45 4.58" data-out="7.26 7.38"><span><b>04</b>Services</span></p>
+      <h2 class="title">
+        <span class="tl" data-in="4.48 4.62" data-out="7.24 7.36"><span>Five services,</span></span>
+        <span class="tl" data-in="4.51 4.65" data-out="7.26 7.38"><span>planned together.</span></span>
+      </h2>
+    </div>
+    <div class="tx svc" data-j="0">
+      <p class="svc__n tl" data-in="4.68 4.78" data-out="5.12 5.20"><span>01 / 05</span></p>
+      <h3 class="svc__name tl" data-in="4.70 4.80" data-out="5.12 5.20"><span>Brand Strategy &amp; Identity</span></h3>
+      <p class="caption tl tl--fade" data-in="4.73 4.83" data-out="5.10 5.18"><span>A clear position, made visible.</span></p>
+      <p class="small svc__desc tl tl--fade" data-in="4.75 4.85" data-out="5.10 5.18"><span>Positioning, identity, campaign creatives</span></p>
+      <p class="svc__link tl tl--fade" data-in="4.76 4.86" data-out="5.10 5.18"><span><a class="link" href="#">See Brand Strategy &amp; Identity</a></span></p>
+    </div>
+    <div class="tx svc" data-j="1">
+      <p class="svc__n tl" data-in="5.23 5.33" data-out="5.67 5.75"><span>02 / 05</span></p>
+      <h3 class="svc__name tl" data-in="5.25 5.35" data-out="5.67 5.75"><span>Web Design &amp; Development</span></h3>
+      <p class="caption tl tl--fade" data-in="5.28 5.38" data-out="5.65 5.73"><span>The same idea, on every screen.</span></p>
+      <p class="small svc__desc tl tl--fade" data-in="5.30 5.40" data-out="5.65 5.73"><span>UX/UI, websites, custom builds</span></p>
+      <p class="svc__link tl tl--fade" data-in="5.31 5.41" data-out="5.65 5.73"><span><a class="link" href="#">See Web Design &amp; Development</a></span></p>
+    </div>
+    <div class="tx svc" data-j="2">
+      <p class="svc__n tl" data-in="5.78 5.88" data-out="6.22 6.30"><span>03 / 05</span></p>
+      <h3 class="svc__name tl" data-in="5.80 5.90" data-out="6.22 6.30"><span>Digital Marketing</span></h3>
+      <p class="caption tl tl--fade" data-in="5.83 5.93" data-out="6.20 6.28"><span>One message, every channel.</span></p>
+      <p class="small svc__desc tl tl--fade" data-in="5.85 5.95" data-out="6.20 6.28"><span>Strategy, campaigns, social, content</span></p>
+      <p class="svc__link tl tl--fade" data-in="5.86 5.96" data-out="6.20 6.28"><span><a class="link" href="#">See Digital Marketing</a></span></p>
+    </div>
+    <div class="tx svc" data-j="3">
+      <p class="svc__n tl" data-in="6.33 6.43" data-out="6.77 6.85"><span>04 / 05</span></p>
+      <h3 class="svc__name tl" data-in="6.35 6.45" data-out="6.77 6.85"><span>SEO &amp; GEO</span></h3>
+      <p class="caption tl tl--fade" data-in="6.38 6.48" data-out="6.75 6.83"><span>Understood by search engines and AI.</span></p>
+      <p class="small svc__desc tl tl--fade" data-in="6.40 6.50" data-out="6.75 6.83"><span>Search and AI visibility</span></p>
+      <p class="svc__link tl tl--fade" data-in="6.41 6.51" data-out="6.75 6.83"><span><a class="link" href="#">See SEO &amp; GEO</a></span></p>
+    </div>
+    <div class="tx svc" data-j="4">
+      <p class="svc__n tl" data-in="6.88 6.98" data-out="7.26 7.34"><span>05 / 05</span></p>
+      <h3 class="svc__name tl" data-in="6.90 7.00" data-out="7.26 7.34"><span>Growth &amp; Conversion</span></h3>
+      <p class="caption tl tl--fade" data-in="6.93 7.03" data-out="7.24 7.32"><span>Measured by qualified enquiries.</span></p>
+      <p class="small svc__desc tl tl--fade" data-in="6.95 7.05" data-out="7.24 7.32"><span>Analytics, CRO, enquiry journeys</span></p>
+      <p class="svc__link tl tl--fade" data-in="6.96 7.06" data-out="7.24 7.32"><span><a class="link" href="#">See Growth &amp; Conversion</a></span></p>
+    </div>
+    <div class="pts" aria-hidden="true"><span><b>01</b><i> Brand</i></span><span><b>02</b><i> Web</i></span><span><b>03</b><i> Marketing</i></span><span><b>04</b><i> SEO &amp; GEO</i></span><span><b>05</b><i> Growth</i></span></div>
+    <p class="illus">Illustration, not client work</p>
+
+    <!-- 05 Work: three luminous forms; no client work until approved projects are supplied. -->
+    <div class="tx ch5">
+      <p class="kicker tl" data-in="7.55 7.68" data-out="8.62 8.76"><span><b>05</b>Work</span></p>
+      <h2 class="title"><span class="tl" data-in="7.58 7.72" data-out="8.60 8.74"><span>Selected work</span></span></h2>
+      <p class="body tl tl--fade" data-in="7.66 7.80" data-out="8.58 8.72"><span>Client projects are published here only with the client&apos;s approval, with the facts they have confirmed. No client work is shown until approved projects are supplied.</span></p>
+    </div>
+    <p class="slot small tl tl--fade" data-in="8.00 8.10" data-out="8.56 8.68"><span>Project 01 · awaiting an approved project</span></p>
+    <p class="slot small tl tl--fade" data-in="8.06 8.16" data-out="8.58 8.70"><span>Project 02 · awaiting an approved project</span></p>
+    <p class="slot small tl tl--fade" data-in="8.12 8.22" data-out="8.60 8.72"><span>Project 03 · awaiting an approved project</span></p>
+
+    <!-- 06 Identity: the forms converge; the light recedes and the real logo file appears on calm ground. -->
+    <img class="logo-id" src="img/calix-primary-reversed.png" alt="CALIX" width="953" height="1084">
+    <div class="tx ch6">
+      <p class="kicker tl" data-in="9.50 9.62" data-out="9.95 10.07"><span><b>06</b>Identity</span></p>
+      <h2 class="title"><span class="tl" data-in="9.54 9.68" data-out="9.94 10.06"><span>Proof, with its sources.</span></span></h2>
+      <p class="body tl tl--fade" data-in="9.60 9.74" data-out="9.93 10.05"><span>We would rather show less than claim more. Every result we publish meets three rules:</span></p>
+      <ul class="small">
+        <li class="tl tl--fade" data-in="9.64 9.78" data-out="9.93 10.05"><span>Published only with the client&apos;s written approval.</span></li>
+        <li class="tl tl--fade" data-in="9.67 9.81" data-out="9.93 10.05"><span>Stated with a baseline, a time period and a data source.</span></li>
+        <li class="tl tl--fade" data-in="9.70 9.84" data-out="9.93 10.05"><span>Concept work is always labelled as concept, never as client work.</span></li>
+      </ul>
+    </div>
+
+    <!-- 07 Ecosystem: everything connects; the enquiry arrives and stays. -->
+    <div class="tx ch7">
+      <p class="kicker tl" data-in="10.72 10.85"><span><b>07</b>Ecosystem</span></p>
+      <h2 class="title">
+        <span class="tl" data-in="10.76 10.90"><span>Tell us what</span></span>
+        <span class="tl" data-in="10.80 10.94"><span>you are building.</span></span>
+      </h2>
+      <p class="body tl tl--fade" data-in="10.86 11.00"><span>Best suited to established businesses whose brand and website no longer reflect the quality of their work, and to new ventures that want to launch properly.</span></p>
+      <div class="tl tl--fade" data-in="10.90 11.04"><span><a class="btn btn--solid" href="#">Start a Project</a></span></div>
+    </div>
+  </section>
+
+  <!-- ======================= Static story (no motion) ======================= -->
+  <div class="static-story">
+    <section class="st">
+      <div>
+        <p class="kicker"><b>01</b>Origin</p>
+        <h1 class="display">Make Your Brand Impossible to Ignore.</h1>
+        <p class="lead">Strategy, design, technology and marketing — connected to build stronger brands and better digital outcomes.</p>
+        <p style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px"><a class="btn btn--solid" href="#">Start a project</a><a class="btn" href="#">Explore our work</a></p>
+      </div>
+      <img src="img/origin.webp" alt="" width="1216" height="2032">
+    </section>
+    <section class="st">
+      <div>
+        <p class="kicker"><b>02</b>Awakening</p>
+        <h2 class="title">The idea starts to move.</h2>
+        <p>Most brands are built in pieces: a logo from one studio, a website from another, campaigns and search from someone else. We plan them as one line of thought.</p>
+      </div>
+      <img src="img/veins.webp" alt="" width="2048" height="2048" loading="lazy">
+    </section>
+    <section class="st">
+      <div>
+        <p class="kicker"><b>03</b>Foundation</p>
+        <h2 class="title">One line of thought, from position to enquiry.</h2>
+        <ol class="small">
+          <li><strong>Position.</strong> We start with the business: who you serve, what you are competing against and what a good enquiry looks like.</li>
+          <li><strong>Design.</strong> Identity, messaging and page structure are designed together, so every decision traces back to the position.</li>
+          <li><strong>Build.</strong> Websites and campaigns are built to the design, with accessibility, performance and search structure as requirements.</li>
+          <li><strong>Grow.</strong> After launch we measure what brings qualified enquiries and improve it, in agreed, reviewable steps.</li>
+        </ol>
+      </div>
+      <img src="img/foundation.webp" alt="" width="1228" height="2032" loading="lazy">
+    </section>
+    <section class="st">
+      <div>
+        <p class="kicker"><b>04</b>Services</p>
+        <h2 class="title">Five services, planned together.</h2>
+        <ol class="small">
+          <li><strong>Brand Strategy &amp; Identity.</strong> Positioning, identity, campaign creatives.</li>
+          <li><strong>Web Design &amp; Development.</strong> UX/UI, websites, custom builds.</li>
+          <li><strong>Digital Marketing.</strong> Strategy, campaigns, social, content.</li>
+          <li><strong>SEO &amp; GEO.</strong> Search and AI visibility.</li>
+          <li><strong>Growth &amp; Conversion.</strong> Analytics, CRO, enquiry journeys.</li>
+        </ol>
+      </div>
+      <img src="img/panel-06.webp" alt="" width="1216" height="2056" loading="lazy">
+    </section>
+    <section class="st">
+      <div>
+        <p class="kicker"><b>05</b>Work</p>
+        <h2 class="title">Selected work</h2>
+        <p>Client projects are published here only with the client&apos;s approval, with the facts they have confirmed. No client work is shown until approved projects are supplied.</p>
+      </div>
+    </section>
+    <section class="st">
+      <img src="img/calix-primary-reversed.png" alt="CALIX" width="953" height="1084" loading="lazy" class="st-logo">
+      <div>
+        <p class="kicker"><b>06</b>Identity</p>
+        <h2 class="title">Proof, with its sources.</h2>
+        <p>We would rather show less than claim more. Every result we publish meets three rules:</p>
+        <ul class="small"><li>Published only with the client&apos;s written approval.</li><li>Stated with a baseline, a time period and a data source.</li><li>Concept work is always labelled as concept, never as client work.</li></ul>
+      </div>
+    </section>
+    <section class="st">
+      <div>
+        <p class="kicker"><b>07</b>Ecosystem</p>
+        <h2 class="title">Tell us what you are building.</h2>
+        <p>Best suited to established businesses whose brand and website no longer reflect the quality of their work, and to new ventures that want to launch properly.</p>
+        <p><a class="btn btn--solid" href="#">Start a Project</a></p>
+      </div>
+      <img src="img/panel-10.webp" alt="" width="1212" height="2056" loading="lazy">
+    </section>
+  </div>
+
+  <section class="after">
+    <p class="kicker"><b>End</b>Prototype, chapters 1–7</p>
+    <p>Scroll back up: every movement reverses with the scroll.</p>
+    <p class="small">Images: storyboard panels 01 and 03–10 (AI-upscaled; panels 07–09 show the invented "MINERAL" brand and are labelled as illustration) and awakening-veins (original file, unchanged; shown with light and camera movement only). The golden light is drawn live in code. The logo is the real CALIX file. No client work, results or testimonials are shown.</p>
+  </section>
+</main>
+
+<nav class="rail" aria-label="Story chapters">
+  <button type="button" data-u="0"><b>01</b><span>Origin</span></button>
+  <button type="button" data-u="1.62"><b>02</b><span>Awakening</span></button>
+  <button type="button" data-u="3.3"><b>03</b><span>Foundation</span></button>
+  <button type="button" data-u="4.85"><b>04</b><span>Services</span></button>
+  <button type="button" data-u="8.25"><b>05</b><span>Work</span></button>
+  <button type="button" data-u="9.8"><b>06</b><span>Identity</span></button>
+  <button type="button" data-u="11.05"><b>07</b><span>Ecosystem</span></button>
+  <i class="bar" aria-hidden="true"></i>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+  if (!document.documentElement.classList.contains("motion")) return;
+  if (!window.gsap || !window.ScrollTrigger) { document.documentElement.classList.remove("motion"); return; }
+  gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
+  /* ------------------------------------------------------------------ helpers */
+  const U_TOTAL = 11.3;           // scroll length of the pinned story, in screen heights
+  // Chapter starts: Origin 1.2, Awakening 1.6, Foundation 1.6, Services 3.0, Work 1.5, Identity 1.2, Ecosystem 1.2
+  const CHAPTERS = [0, 1.2, 2.8, 4.4, 7.4, 8.9, 10.1];
+  const P = { espresso: "#2E1E14", ivory: "#F6F1E8", trav: "#D9C9A8", gold: "#B08D57" };
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const seg = (u, a, b) => clamp((u - a) / (b - a));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const eo = (t) => 1 - Math.pow(1 - t, 3);
+  const ei = (t) => t * t * t;
+  const eio = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const rng = (seed) => { let s = seed >>> 0; return () => { s = (s + 0x6d2b79f5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+
+  function mkPath(pts) { const L = [0]; for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); return { pts, L, len: L[L.length - 1] }; }
+  function interp(pts, L, i, d) { if (i <= 0) return pts[0]; if (i >= pts.length) return pts[pts.length - 1]; const t = (d - L[i - 1]) / (L[i] - L[i - 1] || 1); return [lerp(pts[i - 1][0], pts[i][0], t), lerp(pts[i - 1][1], pts[i][1], t)]; }
+  function pointAt(path, d) { let i = 1; while (i < path.pts.length && path.L[i] < d) i++; return interp(path.pts, path.L, i, d); }
+  function strokeRange(c, path, d0, d1, map) {
+    const { pts, L } = path; let i = 1;
+    while (i < pts.length && L[i] < d0) i++;
+    let m = map(...interp(pts, L, i, d0)); c.beginPath(); c.moveTo(m[0], m[1]);
+    for (; i < pts.length && L[i] < d1; i++) { m = map(pts[i][0], pts[i][1]); c.lineTo(m[0], m[1]); }
+    m = map(...interp(pts, L, Math.min(i, pts.length - 1), d1)); c.lineTo(m[0], m[1]); c.stroke();
+  }
+
+  /* ------------------------------------------------------------------ canvases */
+  const cv = document.getElementById("world"), cx = cv.getContext("2d");
+  const layer = document.createElement("canvas"), lx = layer.getContext("2d");
+  const maskC = document.createElement("canvas"), mx = maskC.getContext("2d");
+  let W = 0, H = 0, DPR = 1, mobile = false, maskData, noise;
+
+  const glowSprite = document.createElement("canvas"); glowSprite.width = glowSprite.height = 256;
+  { const g = glowSprite.getContext("2d"), gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    gr.addColorStop(0, "rgba(246,241,232,1)"); gr.addColorStop(0.16, "rgba(217,201,168,0.8)"); gr.addColorStop(0.42, "rgba(176,141,87,0.3)"); gr.addColorStop(1, "rgba(176,141,87,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 256); }
+  function glow(c, x, y, r, a) { if (a <= 0.003 || r <= 0) return; c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = Math.min(1, a); c.drawImage(glowSprite, x - r, y - r, 2 * r, 2 * r); c.restore(); }
+  function filament(c, path, d0, d1, map, w, a, headR = 0) {
+    if (a <= 0.003 || d1 <= d0) return;
+    c.save(); c.globalCompositeOperation = "lighter"; c.lineCap = "round"; c.lineJoin = "round";
+    c.strokeStyle = P.gold; c.globalAlpha = 0.06 * a; c.lineWidth = w * 8; strokeRange(c, path, d0, d1, map);
+    c.globalAlpha = 0.2 * a; c.lineWidth = w * 3; strokeRange(c, path, d0, d1, map);
+    c.strokeStyle = P.trav; c.globalAlpha = 0.9 * a; c.lineWidth = w; strokeRange(c, path, d0, d1, map);
+    c.restore();
+    if (headR > 0) { const m = map(...pointAt(path, d1)); glow(c, m[0], m[1], headR, a); }
+  }
+  function resetCtx(c) { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.globalCompositeOperation = "source-over"; c.globalAlpha = 1; }
+
+  /* ------------------------------------------------------------------ assets */
+  const imgs = {}; let veins = null, VC = [0.515, 0.52];
+  const load = (k, src) => new Promise((res) => { const i = new Image(); i.decoding = "async"; i.onload = () => { imgs[k] = i; dirty = true; res(); }; i.onerror = res; i.src = src; });
+  load("origin", "img/origin.webp")
+    .then(() => Promise.all([load("veins", "img/veins.webp"), load("foundation", "img/foundation.webp")]))
+    .then(() => Promise.all(["03", "05", "06", "07", "08", "09", "10"].map((n) => load("p" + n, `img/panel-${n}.webp`))));
+  fetch("veins.json").then((r) => r.json()).then((j) => {
+    VC = j.centre; const r = rng(3);
+    veins = j.paths.map((p) => {
+      const pts = p.p.slice(); const rd = Math.hypot(pts[0][0] - VC[0], pts[0][1] - VC[1]);
+      if (rd > 0.3) return null;
+      if (rd < 0.22) pts.unshift([VC[0], VC[1]]);    // pulses start in the bright core
+      return { path: mkPath(pts), delay: rd * 1.8, speed: 0.55 + r() * 0.5, off: r() };
+    }).filter(Boolean);
+    dirty = true;
+  });
+
+  /* ------------------------------------------------------------------ procedural light */
+  let sprouts = [], roots = [], nodes = [], falls = [], dust = [], maxT = 1, GY = 0, ROOT_X = [], NODE_Y = [];
+  let seedX = 0, seedY = 0, heroH = 0;
+
+  function genSprouts() {
+    const r = rng(7); sprouts = [];
+    for (let i = 0; i < (mobile ? 4 : 6); i++) {
+      let a = -Math.PI / 2 + (r() - 0.5) * 2.2, x = 0, y = 0, av = (r() - 0.5) * 0.06; const pts = [[0, 0]], step = 0.006 + r() * 0.004;
+      for (let k = 0; k < 60; k++) { av = av * 0.92 + (r() - 0.5) * 0.03; a += av; x += Math.cos(a) * step; y += Math.sin(a) * step; pts.push([x, y]); }
+      sprouts.push({ path: mkPath(pts), delay: r() * 0.35, w: 0.5 + r() * 0.6 });
+    }
+  }
+
+  function genRoots() {
+    const r = rng(42); roots = []; nodes = [];
+    const step = H * 0.01;
+    const branch = (x, y, ang, t, depth) => {
+      let a = ang + (r() < 0.5 ? -1 : 1) * (0.35 + r() * 0.5), av = 0; const pts = [[x, y]]; const st = H * 0.008;
+      const n = Math.floor((depth === 1 ? 14 : 8) + r() * (depth === 1 ? 26 : 14));
+      for (let k = 0; k < n; k++) {
+        av = av * 0.9 + (r() - 0.5) * 0.05 + (Math.PI / 2 - a) * 0.012; a += av; x += Math.cos(a) * st; y += Math.sin(a) * st;
+        if (y > GY) break; pts.push([x, y]);
+        if (depth < 3 && k > 3 && r() < (depth === 1 ? 0.05 : 0.035)) branch(x, y, a, t + (pts.length - 1) * st / H, depth + 1);
+      }
+      if (pts.length > 3) roots.push({ path: mkPath(pts), t0: t, w: [0, 0.6, 0.38, 0.26][depth] });
+    };
+    ROOT_X.forEach((fx, i) => {
+      let x = fx * W, y = -H * 0.02, ang = Math.PI / 2, av = 0, t = 0; const pts = [[x, y]];
+      const node = { x: fx * W + (r() - 0.5) * W * 0.03, y: NODE_Y[i] * H, t: 0 };
+      let target = node, reached = false; const gx = fx * W + (r() - 0.5) * W * 0.06;
+      for (let guard = 0; guard < 1000; guard++) {
+        let da = Math.atan2(target.y - y, target.x - x) - ang; da = Math.atan2(Math.sin(da), Math.cos(da));
+        const dist = Math.hypot(target.x - x, target.y - y), near = clamp(1 - dist / (H * 0.12));
+        av = av * (0.86 - 0.3 * near) + (r() - 0.5) * 0.045 * (1 - near) + da * (0.03 + 0.12 * near); ang += av; x += Math.cos(ang) * step; y += Math.sin(ang) * step; t += step / H; pts.push([x, y]);
+        if (!reached && Math.hypot(target.x - x, target.y - y) < step * 3) { reached = true; node.x = x; node.y = y; node.t = t; target = { x: gx, y: GY }; }
+        if (reached && y >= GY - step * 0.5) break;
+        if (guard > 4 && r() < (mobile ? 0.03 : 0.06)) branch(x, y, ang, t, 1);
+      }
+      roots.push({ path: mkPath(pts), t0: 0, w: 1.25 }); nodes.push(node);
+    });
+    maxT = Math.max(...roots.map((o) => o.t0 + o.path.len / H));
+  }
+
+  // Filaments that pour out of the veins at the end of chapter 2 and arrive exactly where the
+  // chapter 3 roots begin (same screen x), so the light is continuous across the cut.
+  function genFalls() {
+    const r = rng(11); const e = veinsCam(1.6), S = 2048 * e.s; falls = [];
+    ROOT_X.forEach((fx, i) => {
+      const ix = (fx * W - e.ox) / S, tipY = (H * 0.03 - e.oy) / S;
+      for (let c = 0; c < (mobile ? 2 : 3); c++) {
+        const main = c === 0, x0 = lerp(VC[0], ix, 0.35 + r() * 0.4) + (r() - 0.5) * 0.08, y0 = VC[1] + 0.18 + r() * 0.14;
+        const amp = (main ? 0.005 : 0.01) + r() * 0.01, fq = 2 + r() * 3.5, ph = r() * 6, end = main ? tipY : lerp(y0, tipY, 0.55 + r() * 0.35);
+        const dx = main ? 0 : (r() - 0.5) * 0.05, pts = [];
+        for (let k = 0; k <= 48; k++) { const t = k / 48; pts.push([lerp(x0, ix + dx * t, eio(t)) + Math.sin(ph + t * fq) * amp * (1 - t * 0.8), lerp(y0, end, t)]); }
+        falls.push({ path: mkPath(pts), w: main ? 1.3 : 0.6, delay: main ? 0 : r() * 0.25 });
+      }
+    });
+  }
+
+  function genDust() { const r = rng(5); dust = Array.from({ length: mobile ? 28 : 60 }, () => ({ x: r(), y: r(), z: 0.3 + r() * 1.2, s: 1 + r() * 2.2, ph: r() * 6.28 })); }
+
+  /* ------------------------------------------------------------------ cameras */
+  function originCam(u) {
+    const d = seg(u, 0.72, 1.2);
+    const z = (1 + 0.12 * eio(seg(u, 0, 0.7))) * Math.pow(9, ei(d));
+    return { z, d, ax: lerp(seedX, W / 2, eio(d)), ay: lerp(seedY, H / 2, eio(d)) };
+  }
+  function veinsCam(a) {
+    const iw = 2048, base = Math.max(W / iw, H / iw);
+    const z = lerp(1.75, 1.12, eo(seg(a, -0.02, 0.45))) * lerp(1, 0.94, eio(seg(a, 0.45, 1.3)));
+    const k = eio(seg(a, 0.22, 0.62));
+    const cxs = lerp(W / 2, mobile ? W * 0.5 : W * 0.63, k) + W * 0.02 * eio(seg(a, 0.62, 1.3));
+    const cy0 = lerp(H / 2, mobile ? H * 0.38 : H * 0.5, k), cys = cy0 - H * 1.15 * ei(seg(a, 1.2, 1.6));
+    const need = Math.max(cxs / VC[0], (W - cxs) / (1 - VC[0]), cy0 / VC[1], (H - cy0) / (1 - VC[1])) * 1.02;
+    const s = Math.max(base * z * iw, need) / iw; return { s, ox: cxs - VC[0] * iw * s, oy: cys - VC[1] * iw * s };
+  }
+
+  /* ------------------------------------------------------------------ chapters */
+  let intro = 0, introForce = false; const t0 = performance.now();
+
+  function drawOrigin(u) {
+    const cam = originCam(u), im = imgs.origin;
+    if (im) {
+      const s = (heroH / im.height) * cam.z, dw = im.width * s, dh = im.height * s;
+      resetCtx(lx); lx.clearRect(0, 0, W, H);
+      lx.drawImage(im, cam.ax - 0.51 * dw, cam.ay - 0.48 * dh, dw, dh);
+      // The plate is lit outward from the seed: a pool of light that widens as the visitor scrolls.
+      const R = (H * (0.2 + 0.32 * intro) + H * 1.3 * eo(seg(u, 0.04, 0.65))) * Math.sqrt(cam.z);
+      const g = lx.createRadialGradient(cam.ax, cam.ay, 0, cam.ax, cam.ay, R);
+      g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(0.55, "rgba(0,0,0,0.85)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      lx.globalCompositeOperation = "destination-in"; lx.fillStyle = g; lx.fillRect(0, 0, W, H);
+      const px = cam.ax - 0.51 * dw, e = lx.createLinearGradient(px, 0, px + dw, 0);
+      e.addColorStop(0, "rgba(0,0,0,0)"); e.addColorStop(0.16, "rgba(0,0,0,1)"); e.addColorStop(0.84, "rgba(0,0,0,1)"); e.addColorStop(1, "rgba(0,0,0,0)");
+      lx.fillStyle = e; lx.fillRect(0, 0, W, H);
+      cx.globalAlpha = intro; cx.drawImage(layer, 0, 0, W, H); cx.globalAlpha = 1;
+    }
+    const g = seg(u, 0.28, 0.95), zz = cam.z, map = (x, y) => [cam.ax + x * H * zz, cam.ay + y * H * zz];
+    const lw = Math.min(H * 0.0012 * Math.sqrt(zz), 7);
+    for (const sp of sprouts) { const f = eo(clamp((g - sp.delay) / 0.7)); if (f > 0) filament(cx, sp.path, 0, sp.path.len * f, map, lw * sp.w, 0.8, f < 1 ? H * 0.009 : 0); }
+    const r = H * 0.05 * (0.55 + 0.45 * intro) * (1 + 0.3 * seg(u, 0, 0.5)) * (1 + 46 * ei(cam.d));
+    glow(cx, cam.ax, cam.ay, r, intro * (0.8 + 0.2 * seg(u, 0, 0.3)));
+  }
+
+  function buildMask(t) {
+    const w = maskC.width, h = maskC.height, d = maskData.data, th = 1 - t * 1.08;
+    for (let y = 0; y < h; y++) { const b = (1 - y / h) * 0.76; for (let x = 0; x < w; x++) { const i = y * w + x; d[i * 4 + 3] = noise[i] * 0.24 + b < th ? 255 : 0; } }
+    mx.putImageData(maskData, 0, 0);
+  }
+
+  function drawAwakening(a) {
+    const im = imgs.veins; if (!im || !veins) return;
+    const cam = veinsCam(a), S = 2048 * cam.s, map = (x, y) => [cam.ox + x * S, cam.oy + y * S];
+    const lw = Math.max(1, H * 0.0013), dis = seg(a, 1.22, 1.58);
+    if (dis < 1) {
+      resetCtx(lx); lx.clearRect(0, 0, W, H);
+      lx.drawImage(im, cam.ox, cam.oy, S, S);          // the original image, only moved and scaled
+      lx.globalAlpha = 0.3; lx.fillStyle = P.espresso; lx.fillRect(0, 0, W, H); lx.globalAlpha = 1;
+      const sc = seg(a, 0.2, 0.5) * (1 - seg(a, 1.15, 1.4));
+      if (sc > 0) {
+        const g = mobile ? lx.createLinearGradient(0, H, 0, H * 0.35) : lx.createLinearGradient(0, 0, W * 0.6, 0);
+        g.addColorStop(0, "rgba(46,30,20,0.88)"); g.addColorStop(1, "rgba(46,30,20,0)");
+        lx.globalAlpha = sc; lx.fillStyle = g; lx.fillRect(0, 0, W, H); lx.globalAlpha = 1;
+      }
+      // Light travels outward along the real veins; pulses run with the scroll (and back with it).
+      const gv = seg(a, 0.1, 1.0), env = seg(a, 0.22, 0.45) * (1 - seg(a, 1.12, 1.32));
+      for (const v of veins) {
+        const f = eio(clamp(gv * 1.6 - v.delay)); if (f <= 0) continue;
+        const d1 = v.path.len * f; filament(lx, v.path, 0, d1, map, lw * 0.8, 0.26);
+        if (env > 0) { const s = (((a * v.speed + v.off) % 1) + 1) % 1, d = s * d1; filament(lx, v.path, Math.max(0, d - v.path.len * 0.14), d, map, lw * 1.4, env, H * 0.012); }
+      }
+      const c = map(VC[0], VC[1]); glow(lx, c[0], c[1], H * 0.32, 0.22 + 0.4 * env);
+      if (dis > 0) { buildMask(dis); lx.globalCompositeOperation = "destination-in"; lx.imageSmoothingEnabled = false; lx.drawImage(maskC, 0, 0, W, H); lx.imageSmoothingEnabled = true; }
+      cx.drawImage(layer, 0, 0, W, H);
+    }
+    const fall = seg(a, 1.08, 1.55), fa = 1 - seg(a, 1.7, 2.0);
+    if (fall > 0 && fa > 0) for (const p of falls) { const f = eo(clamp((fall - p.delay) / (1 - p.delay))); if (f > 0) filament(cx, p.path, 0, p.path.len * f, map, lw * p.w, fa * (p.w > 1 ? 1 : 0.7), f < 1 ? H * 0.012 : 0); }
+  }
+
+  function drawFoundation(f, stepState, fade) {
+    const rise = eo(seg(f, 0.2, 1.2)), im = imgs.foundation;
+    if (im && rise > 0) {
+      const sy = im.height * 0.33, sh = im.height - sy, dw = mobile ? W * 1.15 : W * 0.46, dh = (dw * sh) / im.width;
+      const x = (mobile ? 0.5 : 0.56) * W - dw / 2, y = lerp(H * 1.02, H * (mobile ? 0.5 : 0.46), rise);
+      resetCtx(lx); lx.clearRect(0, 0, W, H);
+      lx.drawImage(im, 0, sy, im.width, sh, x, y, dw, dh);
+      lx.globalAlpha = 0.3; lx.fillStyle = P.espresso; lx.fillRect(0, 0, W, H); lx.globalAlpha = 1;
+      const g = lx.createRadialGradient(x + dw / 2, y + dh * 0.55, 0, x + dw / 2, y + dh * 0.55, dw * 0.7);
+      g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(0.6, "rgba(0,0,0,0.7)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      lx.globalCompositeOperation = "destination-in"; lx.fillStyle = g; lx.fillRect(0, 0, W, H);
+      cx.globalAlpha = 0.8 * rise * fade; cx.drawImage(layer, 0, 0, W, H); cx.globalAlpha = 1;
+    }
+    const gq = seg(f, -0.03, 1.05), g = (1 - (1 - gq) * (1 - gq)) * maxT * 1.02, id = (x, y) => [x, y], lw = Math.max(1, H * 0.0014);
+    for (const o of roots) { const d1 = (g - o.t0) * H; if (d1 > 0) filament(cx, o.path, 0, Math.min(d1, o.path.len), id, lw * o.w, fade, d1 < o.path.len ? H * 0.011 : 0); }
+    nodes.forEach((n, i) => { const on = seg(g, n.t, n.t + 0.05); stepState[i] = on * fade; if (on > 0) glow(cx, n.x, n.y, H * 0.032 * (1 + 0.6 * (1 - on)), on * fade); });
+  }
+
+  function drawWhiteout(u) {
+    const w = u < 1.2 ? eio(seg(u, 0.9, 1.2)) : 1 - eo(seg(u, 1.2, 1.52)); if (w <= 0) return 0;
+    cx.globalAlpha = w; cx.fillStyle = P.ivory; cx.fillRect(0, 0, W, H);
+    cx.globalAlpha = w * 0.3; cx.fillStyle = P.gold; cx.fillRect(0, 0, W, H); cx.globalAlpha = 1; return w;
+  }
+
+  function drawDust(u, wo) {
+    const k = 1 - wo; if (k <= 0) return;
+    for (const p of dust) {
+      const y = ((((p.y * H * 1.3 - u * H * 0.3 * p.z) % (H * 1.3)) + H * 1.3) % (H * 1.3)) - H * 0.15;
+      glow(cx, p.x * W + Math.sin(p.ph + u * 0.9) * 14 * p.z, y, p.s * p.z * 3, 0.22 * p.z * k);
+    }
+  }
+
+
+  /* ------------------------------------------------------------------ chapters 4–7 */
+  const SV_START = 4.6, SV_STRIDE = 0.55, SV_D = 0.62, SV_IMG = ["06", "07", "08", "09", "03"], SV_ILLUS = [false, true, true, true, false];
+  const GROUPS = [0, 0, 1, 2, 2]; // which work form each service point flows into
+  let gpts = [], win = null, climbs = [], frameL = null, frameR = null, formPos = [], formR = 0, net = null, logoC = [0, 0];
+  const ptEls = Array.from(document.querySelectorAll(".pts span")), illusEl = document.querySelector(".illus");
+  const slotEls = Array.from(document.querySelectorAll(".slot")), logoEl = document.querySelector(".logo-id");
+  const svVisOf = (k) => eo(seg(k, 0.2, 0.55)) * (1 - eo(seg(k, 0.84, 1)));
+  const id = (x, y) => [x, y];
+
+  function cubicPts(a, c1, c2, b, n = 32) {
+    const out = [];
+    for (let i = 0; i <= n; i++) { const t = i / n, m = 1 - t; out.push([m * m * m * a[0] + 3 * m * m * t * c1[0] + 3 * m * t * t * c2[0] + t * t * t * b[0], m * m * m * a[1] + 3 * m * m * t * c1[1] + 3 * m * t * t * c2[1] + t * t * t * b[1]]); }
+    return out;
+  }
+  function ellipsePts(rx, ry, a, n = 56) {
+    const out = [], ca = Math.cos(a), sa = Math.sin(a);
+    for (let i = 0; i <= n; i++) { const t = (i / n) * Math.PI * 2, x = rx * Math.cos(t), y = ry * Math.sin(t); out.push([x * ca - y * sa, x * sa + y * ca]); }
+    return out;
+  }
+
+  function genNet() {
+    const r = rng(77), c0 = [logoC[0] / W, logoC[1] / H], nodes = [{ x: c0[0], y: c0[1] }], minD = mobile ? 0.15 : 0.12; let tries = 0;
+    const dist = (a, b) => Math.hypot(((a.x - b.x) * W) / H, a.y - b.y);
+    while (nodes.length < (mobile ? 16 : 24) && tries++ < 5000) {
+      const n = { x: 0.04 + r() * 0.92, y: 0.12 + r() * 0.74 };
+      if (nodes.every((m) => dist(m, n) > minD)) nodes.push(n);
+    }
+    nodes.forEach((n) => (n.d = dist(n, nodes[0]))); nodes.sort((a, b) => a.d - b.d);
+    const maxd = nodes[nodes.length - 1].d || 1; nodes.forEach((n) => (n.t = n.d / maxd));
+    const edges = [];
+    const edge = (a, b, w = 1) => {
+      const near0 = a === nodes[0], sp = near0 ? 1.3 : 0.8, dx = b.x - a.x, dy = b.y - a.y, o1 = (r() < 0.5 ? -1 : 1) * (0.15 + r() * 0.35) * sp, o2 = (r() - 0.5) * 0.7 * sp;
+      const c1 = [a.x + dx * 0.33 - dy * o1, a.y + dy * 0.33 + dx * o1], c2 = [a.x + dx * 0.66 - dy * o2, a.y + dy * 0.66 + dx * o2];
+      edges.push({ path: mkPath(cubicPts([a.x, a.y], c1, c2, [b.x, b.y], 28)), ta: a.t, tb: b.t, w });
+    };
+    const tendrils = [];
+    const tendril = (n, long = false) => {
+      let ang = r() * Math.PI * 2, av = (r() - 0.5) * 0.2, x = n.x, y = n.y; const pts = [[x, y]], st = 0.004 + r() * 0.003, len = long ? 26 + Math.floor(r() * 24) : 10 + Math.floor(r() * 16);
+      for (let k = 0; k < len; k++) { av = av * 0.9 + (r() - 0.5) * 0.12; ang += av; x += (Math.cos(ang) * st * H) / W; y += Math.sin(ang) * st; pts.push([x, y]); }
+      tendrils.push({ path: mkPath(pts), t: n.t, long });
+    };
+    for (let k = 0; k < (mobile ? 6 : 9); k++) tendril(nodes[0], true);
+    for (let i = 1; i < nodes.length; i++) {
+      const near = nodes.slice(0, i).map((m) => [m, dist(m, nodes[i])]).sort((a, b) => a[1] - b[1]);
+      edge(near[0][0], nodes[i]); if (near[1] && r() < 0.4) edge(near[1][0], nodes[i], 0.6);
+      for (let k = 0, m = 1 + Math.floor(r() * 3); k < m; k++) tendril(nodes[i]);
+    }
+    const names = ["01 Origin", "02 Awakening", "03 Foundation", "04 Services", "05 Work", "06 Identity", "07 Ecosystem"];
+    const cands = nodes.slice(1).filter((n) => mobile || n.x > 0.5), labels = [];
+    names.forEach((nm, k) => {
+      const ang = (k / 7) * Math.PI * 2 - Math.PI / 2; let best = null, bs = 1e9;
+      for (const n of cands) {
+        if (n.label) continue;
+        const a = Math.atan2(n.y - c0[1], ((n.x - c0[0]) * W) / H), sc = Math.abs(Math.atan2(Math.sin(a - ang), Math.cos(a - ang))) + Math.abs(n.t - 0.55) * 2;
+        if (sc < bs) { bs = sc; best = n; }
+      }
+      if (best) { best.label = true; labels.push({ n: best, name: mobile ? nm.slice(0, 2) : nm.toUpperCase() }); }
+    });
+    net = { nodes, edges, tendrils, labels, c0 };
+  }
+
+  function genLate() {
+    gpts = [0, 1, 2, 3, 4].map((j) => [W * lerp(mobile ? 0.1 : 0.14, mobile ? 0.9 : 0.94, j / 4), GY]);
+    const wh = H * (mobile ? 0.4 : 0.6), ww = wh * 0.6, wcx = W * (mobile ? 0.5 : 0.7), wcy = H * (mobile ? 0.34 : 0.43);
+    win = { x: wcx - ww / 2, y: wcy - wh / 2, w: ww, h: wh };
+    const bc = [wcx, win.y + wh], tc = [wcx, win.y];
+    climbs = gpts.map((pt) => mkPath(cubicPts(pt, [pt[0], pt[1] - H * 0.08], [bc[0], bc[1] + H * 0.1], bc)));
+    frameL = mkPath([bc, [win.x, win.y + wh], [win.x, win.y], tc]);
+    frameR = mkPath([bc, [win.x + ww, win.y + wh], [win.x + ww, win.y], tc]);
+    formPos = (mobile ? [[0.24, 0.52], [0.5, 0.44], [0.76, 0.54]] : [[0.5, 0.54], [0.68, 0.4], [0.86, 0.56]]).map(([x, y]) => [x * W, y * H]);
+    formR = Math.min(H * 0.11, W * (mobile ? 0.1 : 0.11));
+    logoC = mobile ? [W * 0.5, H * 0.31] : [W * 0.3, H * 0.5];
+    genNet();
+    ptEls.forEach((el, j) => { el.style.left = gpts[j][0] + "px"; el.style.top = GY + 16 + "px"; });
+    illusEl.style.left = win.x + "px"; illusEl.style.top = win.y - 34 + "px";
+    slotEls.forEach((el, k) => { el.style.left = formPos[k][0] - 95 + "px"; el.style.top = formPos[k][1] + formR * 1.3 + "px"; });
+  }
+
+  // The ground line and its five points: born at the end of Foundation, carrying Services.
+  function drawGround(u, svK) {
+    const lw = Math.max(1, H * 0.0014), grow = eio(seg(u, 3.75, 4.1)), fade = 1 - seg(u, 7.4, 7.7);
+    if (grow > 0 && fade > 0) { const x0 = W * (mobile ? 0.5 : 0.54), half = grow * W * (mobile ? 0.46 : 0.42); filament(cx, mkPath([[x0 - half, GY], [x0 + half, GY]]), 0, 2 * half, id, lw, fade); }
+    if (u < 7.42) for (let j = 0; j < 5; j++) {
+      const on = seg(u, 4.0 + j * 0.06, 4.1 + j * 0.06), act = svVisOf(svK[j]);
+      if (on > 0) glow(cx, gpts[j][0], GY, H * 0.026 * (1 + 0.7 * act), on * (0.65 + 0.35 * act));
+    }
+  }
+
+  function revealInto(im, R, o, t, zoom) {
+    resetCtx(lx); lx.clearRect(0, 0, W, H);
+    lx.save(); lx.beginPath(); lx.rect(R.x, R.y, R.w, R.h); lx.clip();
+    const sc = Math.max(R.w / im.width, R.h / im.height) * zoom, dw = im.width * sc, dh = im.height * sc;
+    lx.drawImage(im, R.x + (R.w - dw) / 2, R.y + (R.h - dh) / 2, dw, dh); lx.restore();
+    const rad = Math.max(1, t * Math.hypot(R.w, R.h) * 1.15), g = lx.createRadialGradient(o[0], o[1], 0, o[0], o[1], rad);
+    g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(0.75, "rgba(0,0,0,0.9)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    lx.globalCompositeOperation = "destination-in"; lx.fillStyle = g; lx.fillRect(0, 0, W, H);
+    cx.globalAlpha = t; cx.drawImage(layer, 0, 0, W, H); cx.globalAlpha = 1;
+  }
+
+  // 04 Services: a filament climbs from the service's point, traces a window of light and opens it.
+  function drawServices(u, svK) {
+    const lw = Math.max(1, H * 0.0014), bc = [win.x + win.w / 2, win.y + win.h];
+    for (let j = 0; j < 5; j++) {
+      const k = svK[j]; if (k <= 0 || k >= 1) continue;
+      const out = seg(k, 0.84, 1), rv = svVisOf(k), im = imgs["p" + SV_IMG[j]];
+      if (im && rv > 0) revealInto(im, win, bc, rv, 1.08 - 0.08 * eo(seg(k, 0.2, 0.84)));
+      const cf = eo(seg(k, 0, 0.25)) * (1 - eo(out)), c = climbs[j];
+      if (cf > 0) filament(cx, c, 0, c.len * cf, id, lw, 1, cf < 1 && out === 0 ? H * 0.012 : 0);
+      const ff = eio(seg(k, 0.15, 0.45)) * (1 - eio(out)), head = ff < 1 && out === 0 ? H * 0.01 : 0;
+      if (ff > 0) { filament(cx, frameL, 0, frameL.len * ff, id, lw * 0.8, 0.85, head); filament(cx, frameR, 0, frameR.len * ff, id, lw * 0.8, 0.85, head); }
+    }
+  }
+
+  // 05 Work: three distinct luminous forms (a lens, a turning orb, a bloom).
+  function formCurves(type, rot) {
+    const c = [], wob = (t, i) => 1 + 0.07 * Math.sin(3 * t + i * 1.7 + rot) + 0.04 * Math.sin(5 * t - i);
+    const turn = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+    if (type === 0) for (let i = 0; i < 7; i++) {          // a lens of nested, slightly irregular loops
+      const rx = 0.2 + 0.05 * i, a = -0.32 + i * 0.1 + Math.sin(rot + i) * 0.1, pts = [];
+      for (let k = 0; k <= 64; k++) { const t = (k / 64) * Math.PI * 2, w = wob(t, i); pts.push(turn(rx * Math.cos(t) * w, Math.sin(t) * w, a)); }
+      c.push(pts);
+    }
+    else if (type === 1) for (let i = 0; i < 6; i++) {     // an orb of light turning with the scroll
+      const rx = 0.04 + 0.88 * Math.abs(Math.cos((i / 6) * Math.PI + rot)), pts = [];
+      for (let k = 0; k <= 64; k++) { const t = (k / 64) * Math.PI * 2, w = wob(t, i); pts.push(turn(rx * Math.cos(t) * w, 0.92 * Math.sin(t) * w, 0.18)); }
+      c.push(pts);
+    }
+    else for (let i = 0; i < 5; i++) {                      // a vortex: spiral arms of light
+      const base = (i / 5) * Math.PI * 2 + rot * 0.6, pts = [];
+      for (let k = 0; k <= 60; k++) { const t = k / 60, rr = (0.08 + 0.92 * Math.pow(t, 1.3)) * (1 + 0.05 * Math.sin(t * 9 + i)), th = base + t * 3.4; pts.push([Math.cos(th) * rr, Math.sin(th) * rr]); }
+      c.push(pts);
+    }
+    return c.map(mkPath);
+  }
+  function formState(u, k) {
+    const c = eio(seg(u, 8.75, 9.42)), depth = [0.6, 1, 1.4][k], drift = (u - 8.15) * H * 0.05 * depth * (1 - c);
+    return { x: lerp(formPos[k][0], logoC[0], c), y: lerp(formPos[k][1] + drift, logoC[1], c), s: formR * lerp(1, 0.62, eio(c)), c, drift };
+  }
+  function drawForms(u) {
+    const lw = Math.max(1, H * 0.0012), bd = 0.3 * seg(u, 7.6, 8.0) * (1 - seg(u, 8.5, 8.9)), im = imgs.p05;
+    if (im && bd > 0) { const sc = Math.max(W / im.width, H / im.height) * lerp(1.1, 1, seg(u, 7.6, 8.9)), dw = im.width * sc, dh = im.height * sc; cx.globalAlpha = bd; cx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh); cx.globalAlpha = 1; }
+    const tr = seg(u, 7.4, 7.82);
+    if (tr > 0 && tr < 1) for (let j = 0; j < 5; j++) {
+      const f = formState(u, GROUPS[j]), a = gpts[j], pth = mkPath(cubicPts(a, [a[0], a[1] - H * 0.12], [f.x, f.y + H * 0.15], [f.x, f.y], 24)), d = pth.len * eio(tr);
+      filament(cx, pth, Math.max(0, d - pth.len * 0.3), d, id, lw * 1.2, 1, H * 0.014);
+    }
+    const hide = 1 - seg(u, 9.4, 9.5), rot = (u - 7.4) * 1.3;
+    for (let k = 0; k < 3; k++) {
+      const bloom = seg(u, 7.7 + k * 0.07, 8.2 + k * 0.07); if (bloom <= 0 || hide <= 0) continue;
+      const f = formState(u, k), map = (x, y) => [f.x + x * f.s, f.y + y * f.s];
+      formCurves(k, rot + f.c * f.c * 7).forEach((pth, i) => { const g = eio(clamp(bloom * 1.5 - i * 0.07)); if (g > 0) filament(cx, pth, 0, pth.len * g, map, lw * lerp(0.8, 1.15, f.c), lerp(0.85, 0.6, f.c) * hide, 0); });
+      glow(cx, f.x, f.y, f.s * 0.8 + H * 0.02, (0.3 * bloom + 0.25 * f.c) * hide);
+    }
+    const flash = seg(u, 9.34, 9.46) * (1 - seg(u, 9.46, 9.6));
+    if (flash > 0) glow(cx, logoC[0], logoC[1], H * (0.1 + 0.2 * flash), flash * 0.9);
+  }
+
+  // 07 Ecosystem: one network grows out of the identity's place; the camera pulls back.
+  function drawEcosystem(u) {
+    const e = u - 10.1, lw = Math.max(1, H * 0.0012), im = imgs.p10, pr = eo(seg(e, 0.35, 0.95));
+    if (im && pr > 0) {
+      resetCtx(lx); lx.clearRect(0, 0, W, H);
+      const sc = Math.max(W / im.width, H / im.height) * lerp(1.12, 1, pr), dw = im.width * sc, dh = im.height * sc;
+      lx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      lx.globalAlpha = 0.35; lx.fillStyle = P.espresso; lx.fillRect(0, 0, W, H); lx.globalAlpha = 1;
+      const g = lx.createRadialGradient(logoC[0], logoC[1], 0, logoC[0], logoC[1], Math.max(1, pr * Math.hypot(W, H)));
+      g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(0.7, "rgba(0,0,0,0.8)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      lx.globalCompositeOperation = "destination-in"; lx.fillStyle = g; lx.fillRect(0, 0, W, H);
+      cx.globalAlpha = 0.55 * pr; cx.drawImage(layer, 0, 0, W, H); cx.globalAlpha = 1;
+    }
+    const z = lerp(1.6, 1, eo(seg(e, 0, 0.95))), c0 = net.c0, map = (x, y) => [logoC[0] + (x - c0[0]) * W * z, logoC[1] + (y - c0[1]) * H * z];
+    const g = eio(seg(e, 0.08, 0.82)) * 1.04, fade = seg(u, 10.0, 10.15);
+    for (const ed of net.edges) { const f = clamp((g - ed.ta) / Math.max(0.02, ed.tb - ed.ta)); if (f > 0) filament(cx, ed.path, 0, ed.path.len * f, map, lw * ed.w, 0.8 * fade, f < 1 ? H * 0.008 : 0); }
+    for (const td of net.tendrils) { const f = td.long ? eo(seg(e, 0, 0.35)) : eo(seg(g, td.t + 0.03, td.t + 0.2)); if (f > 0) filament(cx, td.path, 0, td.path.len * f, map, lw * (td.long ? 0.7 : 0.45), 0.75 * fade, td.long && f < 1 ? H * 0.008 : 0); }
+    for (const n of net.nodes) { const on = seg(g, n.t, n.t + 0.05); if (on > 0) { const m = map(n.x, n.y); glow(cx, m[0], m[1], H * (n.label ? 0.02 : 0.008), on * fade); } }
+    const la = seg(e, 0.5, 0.78);
+    if (la > 0) {
+      cx.save(); cx.font = `500 ${mobile ? 10 : 11}px Jost, sans-serif`; if ("letterSpacing" in cx) cx.letterSpacing = "2px"; cx.fillStyle = P.trav; cx.globalAlpha = la;
+      for (const l of net.labels) { const m = map(l.n.x, l.n.y), w = cx.measureText(l.name).width; const x = m[0] + 12 + w > W - 8 ? m[0] - 12 - w : m[0] + 12; cx.fillText(l.name, x, m[1] + 4); }
+      cx.restore();
+    }
+    const sc = seg(e, 0.6, 0.88);
+    if (sc > 0) {
+      const g2 = mobile ? cx.createLinearGradient(0, H, 0, H * 0.4) : cx.createLinearGradient(0, 0, W * 0.55, 0);
+      g2.addColorStop(0, "rgba(46,30,20,0.9)"); g2.addColorStop(1, "rgba(46,30,20,0)");
+      cx.globalAlpha = sc; cx.fillStyle = g2; cx.fillRect(0, 0, W, H); cx.globalAlpha = 1;
+    }
+  }
+
+  const ch3El = document.querySelector(".ch3");
+  function updateLate(u, svK) {
+    const c3 = seg(u, 2.82, 2.96) * (1 - seg(u, 4.42, 4.56));   // the card behind the Foundation title (phones) follows its text
+    ch3El.style.opacity = c3; ch3El.style.visibility = c3 < 0.01 ? "hidden" : "visible";
+    const ptOn = seg(u, 4.1, 4.3) * (1 - seg(u, 7.35, 7.5));
+    ptEls.forEach((el, j) => { const act = svK[j] > 0.1 && svK[j] < 0.9; el.style.opacity = ptOn * (act ? 1 : 0.55); el.classList.toggle("on", act); el.style.visibility = ptOn < 0.01 ? "hidden" : "visible"; });
+    let iv = 0; for (let j = 0; j < 5; j++) if (SV_ILLUS[j]) iv = Math.max(iv, svVisOf(svK[j]));
+    illusEl.style.opacity = iv; illusEl.style.visibility = iv < 0.01 ? "hidden" : "visible";
+    slotEls.forEach((el, k) => { el.style.transform = `translate3d(0, ${formState(u, k).drift}px, 0)`; });
+    const lo = seg(u, 9.45, 9.65) * (1 - seg(u, 9.95, 10.1));
+    logoEl.style.opacity = lo; logoEl.style.visibility = lo < 0.01 ? "hidden" : "visible";
+    logoEl.style.transform = `translate(-50%, -50%) scale(${lerp(0.97, 1, eo(seg(u, 9.45, 9.7)))})`;
+  }
+
+  /* ------------------------------------------------------------------ text */
+  const texts = Array.from(document.querySelectorAll(".stage .tl")).map((el) => {
+    const num = (s) => (s ? s.split(" ").map(Number) : null);
+    return { el, inner: el.firstElementChild, inn: num(el.dataset.in), out: num(el.dataset.out), fade: el.classList.contains("tl--fade") };
+  });
+  const steps = Array.from(document.querySelectorAll(".step"));
+  function updateText(u, stepState) {
+    for (const t of texts) {
+      const pi = t.inn ? eo(seg(u, t.inn[0], t.inn[1])) : 1, po = t.out ? ei(seg(u, t.out[0], t.out[1])) : 0, vis = pi * (1 - po);
+      if (t.fade) { t.el.style.opacity = vis; t.inner.style.transform = `translate3d(0,${(1 - pi) * 16 - po * 16}px,0)`; }
+      else { t.inner.style.transform = `translate3d(0,${(1 - pi) * 106 - po * 106}%,0)`; t.inner.style.opacity = clamp(vis * 1.6); }
+      t.el.style.visibility = vis < 0.01 ? "hidden" : "visible";
+    }
+    steps.forEach((el, i) => {
+      const on = stepState[i] || 0, next = mobile ? stepState[i + 1] || 0 : 0, v = on * (1 - next);
+      el.style.opacity = v; el.style.transform = `translate3d(0,${(1 - on) * 12}px,0)`; el.style.visibility = v < 0.01 ? "hidden" : "visible";
+    });
+  }
+
+  const railBtns = Array.from(document.querySelectorAll(".rail button")), railBar = document.querySelector(".rail .bar");
+  function updateRail(u) {
+    let idx = 0; CHAPTERS.forEach((c, i) => { if (u >= c) idx = i; });
+    railBtns.forEach((b, i) => (i === idx ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")));
+    railBar.style.transform = `scaleX(${u / U_TOTAL})`;
+  }
+
+  /* ------------------------------------------------------------------ frame */
+  function render(u) {
+    intro = introForce ? 1 : eo(clamp((performance.now() - t0 - 150) / 1600));
+    resetCtx(cx); cx.fillStyle = P.espresso; cx.fillRect(0, 0, W, H);
+    const stepState = [], svK = [0, 1, 2, 3, 4].map((j) => (u - (SV_START + j * SV_STRIDE)) / SV_D);
+    if (u < 1.26) drawOrigin(u);
+    if (u > 1.17 && u < 3.22) drawAwakening(u - 1.2);
+    if (u > 2.7 && u < 4.72) drawFoundation(u - 2.8, stepState, 1 - seg(u, 4.4, 4.7));
+    if (u > 3.7 && u < 7.75) drawGround(u, svK);
+    if (u > 4.55 && u < 7.45) drawServices(u, svK);
+    if (u > 7.35 && u < 9.7) drawForms(u);
+    if (u > 9.98) drawEcosystem(u);
+    const wo = drawWhiteout(u);
+    drawDust(u, Math.max(wo, 0.6 * seg(u, 9.4, 9.6) * (1 - seg(u, 9.95, 10.1))));
+    updateText(u, stepState);
+    updateLate(u, svK);
+    updateRail(u);
+  }
+
+  function resize() {
+    W = innerWidth; H = innerHeight; mobile = W < 760; DPR = Math.min(devicePixelRatio || 1, mobile ? 1.25 : 1.5);
+    for (const c of [cv, layer]) { c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); }
+    maskC.width = Math.ceil(W / 2); maskC.height = Math.ceil(H / 2); maskData = mx.createImageData(maskC.width, maskC.height);
+    const r = rng(9); noise = new Float32Array(maskC.width * maskC.height).map(() => r());
+    seedX = mobile ? W * 0.5 : W * 0.68; seedY = mobile ? H * 0.64 : H * 0.54;
+    heroH = mobile ? Math.max(H, W / 0.598) * 1.04 : H * 1.06;
+    ROOT_X = mobile ? [0.16, 0.38, 0.6, 0.82] : [0.4, 0.53, 0.66, 0.79];
+    NODE_Y = mobile ? [0.3, 0.4, 0.5, 0.6] : [0.36, 0.47, 0.58, 0.69];
+    GY = H * (mobile ? 0.7 : 0.82);
+    genSprouts(); genRoots(); genFalls(); genDust(); genLate();
+    if (!mobile) nodes.forEach((n, i) => { steps[i].style.left = n.x + 20 + "px"; steps[i].style.top = n.y - 14 + "px"; });
+    dirty = true;
+  }
+
+  // Grain texture for the overlay (static).
+  { const g = document.createElement("canvas"); g.width = g.height = 160; const c = g.getContext("2d"), d = c.createImageData(160, 160);
+    for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+    c.putImageData(d, 0, 0); document.getElementById("grain").style.backgroundImage = `url(${g.toDataURL()})`; }
+
+  /* ------------------------------------------------------------------ scroll engine */
+  const state = { u: 0 }; let dirty = true;
+  resize(); addEventListener("resize", resize);
+  // One pinned stage, one scrubbed timeline: every visual is a pure function of state.u, so
+  // scrolling back reverses everything exactly.
+  const tween = gsap.to(state, {
+    u: U_TOTAL, ease: "none",
+    scrollTrigger: { trigger: "#stage", start: "top top", end: () => "+=" + U_TOTAL * innerHeight, pin: true, scrub: 1, anticipatePin: 1, invalidateOnRefresh: true },
+    onUpdate: () => (dirty = true),
+  });
+  gsap.ticker.add(() => { if (intro < 1) dirty = true; if (dirty) { dirty = false; render(state.u); } });
+  railBtns.forEach((b) => b.addEventListener("click", () => {
+    const st = tween.scrollTrigger; scrollTo({ top: st.start + (Number(b.dataset.u) / U_TOTAL) * (st.end - st.start) + 1, behavior: "auto" });
+  }));
+
+  // Debug hook for review: __seek(u) renders any moment of the story directly.
+  window.__seek = (u) => { introForce = true; state.u = u; render(u); return u; };
+  const q = new URLSearchParams(location.search).get("u"); if (q !== null) { introForce = true; requestAnimationFrame(() => window.__seek(Number(q))); }
+})();
+</script>
+</body>
+</html>

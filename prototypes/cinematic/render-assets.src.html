@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>CALIX asset renderer</title>
+<style>body{margin:0;font:14px/1.5 sans-serif;background:#F6F1E8;color:#2E1E14;padding:16px} li.done{color:#4B5236} canvas{max-width:240px;border:1px solid #2E1E14;margin:4px}</style>
+<p>Renders the Nocturne placeholder images and saves them to public/cinema through the local upload server (port 4174). Development tool only.</p>
+<ol id="log"></ol>
+<div id="thumbs"></div>
+<script>
+(async () => {
+  "use strict";
+  const log = (t) => { const li = document.createElement("li"); li.textContent = t; document.getElementById("log").append(li); return li; };
+  const C = { esp: [46, 30, 20], ivory: [246, 241, 232], trav: [217, 201, 168], gold: [176, 141, 87], olive: [75, 82, 54] };
+  let seed = 11;
+  const rnd = () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const perm = new Uint8Array(512); { const p = [...Array(256).keys()]; for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; } for (let i = 0; i < 512; i++) perm[i] = p[i & 255]; }
+  const fade = (t) => t * t * (3 - 2 * t);
+  const vnoise = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), u = fade(x - xi), v = fade(y - yi), h = (a, b) => perm[(perm[a & 255] + b) & 255] / 255; const a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+  const fbm = (x, y, o = 4) => { let s = 0, a = 0.5; for (let i = 0; i < o; i++) { s += a * vnoise(x, y); x *= 2.03; y *= 2.03; a *= 0.5; } return s; };
+  const mix = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+
+  // ---------- Grounds ----------
+  function stone(w, h) {
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h; const ctx = cv.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let col = mix(C.trav, C.ivory, Math.min(1, Math.max(0, fbm(x * 0.003, y * 0.022) * 1.25 - 0.15)));
+      col = mix(col, C.trav, fbm(x * 0.04, y * 0.1, 2) * 0.25);
+      const pit = vnoise(x * 0.14, y * 0.4); if (pit > 0.87) col = mix(col, C.gold, (pit - 0.87) * 3.2);
+      const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0); return cv;
+  }
+  // Espresso room with one raking light from the upper left, and fine grain.
+  function nightRoom(w, h, lx = 0.25, ly = 0.15) {
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h; const ctx = cv.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const nx = x / w, ny = y / h;
+      const dx = (nx - lx) * 1.1, dy = (ny - ly) * 1.6;
+      const along = (dx * 0.8 + dy * 0.6);
+      const across = (-dx * 0.6 + dy * 0.8);
+      const light = Math.exp(-across * across * 9) * Math.exp(-Math.max(0, along) * 1.6) * (along > -0.3 ? 1 : Math.exp((along + 0.3) * 6));
+      const wall = fbm(x * 0.004, y * 0.004, 3);
+      let col = mix(C.esp, C.olive, wall * 0.35);
+      col = mix(col, mix(C.trav, C.gold, 0.35), Math.min(0.55, light * 0.55 * (0.75 + wall * 0.5)));
+      col = mix(col, C.esp, vnoise(x * 0.9, y * 0.9) * 0.08);
+      const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0); return cv;
+  }
+  function ivoryRoom(w, h) {
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h; const ctx = cv.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const k = Math.min(1, (y / h) * 0.7 + fbm(x * 0.003, y * 0.003, 3) * 0.3);
+      const col = mix(C.ivory, C.trav, k * 0.55);
+      const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0); return cv;
+  }
+  function strata(w, h) {
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h; const ctx = cv.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const s = fbm(x * 0.002 + fbm(x * 0.0015, y * 0.007) * 2, y * 0.012, 4);
+      let col = mix(C.esp, C.olive, Math.min(1, Math.max(0, s * 1.4 - 0.3)));
+      col = mix(col, C.esp, vnoise(x * 0.9, y * 0.9) * 0.16);
+      const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    ctx.lineCap = "round";
+    const grow = (x, y, ang, len, width, depth) => {
+      if (depth <= 0 || width < 0.4) return;
+      let px = x, py = y, a = ang; ctx.beginPath(); ctx.moveTo(px, py);
+      for (let i = 0; i < 16; i++) { a += (vnoise(px * 0.008 + depth, py * 0.008) - 0.5) * 0.3; a = a * 0.92 + (Math.PI / 2) * 0.08; px += Math.cos(a) * len / 16; py += Math.sin(a) * len / 16; ctx.lineTo(px, py); }
+      ctx.strokeStyle = depth > 3 ? "rgba(176,141,87,0.85)" : "rgba(217,201,168,0.5)"; ctx.lineWidth = width; ctx.stroke();
+      const n = depth > 4 ? 3 : 2; for (let k = 0; k < n; k++) grow(px, py, a + (rnd() - 0.5) * 1.3, len * (0.62 + rnd() * 0.2), width * 0.66, depth - 1);
+    };
+    for (let r = 0; r < 8; r++) grow(w * (0.1 + r * 0.115), -h * 0.12, Math.PI / 2 + (r - 3.5) * 0.1, h * 0.34, w / 480, 6);
+    return cv;
+  }
+
+  // ---------- Mineral ----------
+  const FRAG = `__MINERAL_FRAG__`;
+  const BEATS = (() => { const ch = [[["o1", .35], ["o2", .5], ["o3", .4]], [["w1", .4], ["w2", .4], ["w3", .5]], [["f1", .45], ["f2", .45], ["f3", .35]], [["e1", .45], ["e2", .4], ["e3", .45]], [["d1", .45], ["d2", .45], ["d3", .35]], [["i1", .45], ["i2", .4], ["i3", .4]], [["c1", .4], ["c2", .5], ["c3", .6]]]; const m = new Map(); let at = 0; ch.flat().forEach(([id, dd]) => { m.set(id, [at, at + dd]); at += dd; }); return m; })();
+  const sm = (a, b, x) => { const k = Math.min(Math.max((x - a) / (b - a), 0), 1); return k * k * (3 - 2 * k); };
+  const prog = (t, from, to = from) => { const a = BEATS.get(from), b = BEATS.get(to); return sm(a[0] + (a[1] - a[0]) * 0.1, b[1] - (b[1] - b[0]) * 0.1, t); };
+  const params = (t) => ({ A: [prog(t, "o2"), prog(t, "w1"), prog(t, "w2"), prog(t, "w3")], B: [prog(t, "f1"), prog(t, "f2"), prog(t, "e1", "e2"), prog(t, "e3")], C: [prog(t, "d1"), prog(t, "d2"), prog(t, "i1"), prog(t, "i2")], D: [prog(t, "i3"), prog(t, "c2"), prog(t, "c3"), 0] });
+  const gcv = document.createElement("canvas");
+  const gl = gcv.getContext("webgl", { alpha: true, premultipliedAlpha: true, preserveDrawingBuffer: true, antialias: false });
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, "attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }")); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FRAG)); gl.linkProgram(pr); gl.useProgram(pr);
+  const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const u = (n) => gl.getUniformLocation(pr, n);
+  const mineral = (t, w, h, cam) => {
+    gcv.width = w; gcv.height = h; gl.viewport(0, 0, w, h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    const f = params(t); gl.uniform2f(u("uRes"), w, h); gl.uniform1f(u("uTime"), t * 2.2);
+    gl.uniform4fv(u("uA"), f.A); gl.uniform4fv(u("uB"), f.B); gl.uniform4fv(u("uC"), f.C); gl.uniform4fv(u("uD"), f.D); gl.uniform4fv(u("uCam"), cam);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    const out = document.createElement("canvas"); out.width = w; out.height = h; out.getContext("2d").drawImage(gcv, 0, 0); return out;
+  };
+
+  // ---------- Assets ----------
+  // [name, width, height, ground, render: [t, cam, x, y, size] or null]
+  const ASSETS = [
+    ["origin-seed", 1920, 1200, "night", [1.2, [-0.42, 0.16, 1.7, -0.05], 0.62, 0.52, 1.0]],
+    ["awakening-veins", 1000, 1300, "ivory", [2.45, [-0.1, 0.12, 0.95, -0.02], 0.5, 0.5, 1.3]],
+    ["awakening-blades", 1000, 1300, "stone", [2.55, [0.35, 0.3, 1.15, 0.32], 0.5, 0.5, 1.3]],
+    ["awakening-rings", 1000, 1300, "ivory", [2.2, [-0.6, 0.25, 1.05, 0.0], 0.5, 0.5, 1.3]],
+    ["foundation-strata", 1920, 1200, "strata", null],
+    ["service-brand", 1200, 1500, "night", [4.95, [0.2, 0.3, 1.3, 0.45], 0.5, 0.5, 1.25]],
+    ["service-web", 1200, 1500, "night", [4.95, [-0.5, 0.45, 1.6, 0.25], 0.5, 0.5, 1.25]],
+    ["service-marketing", 1200, 1500, "night", [5.6, [0.9, 0.3, 1.4, 0.42], 0.5, 0.5, 1.25]],
+    ["service-seo", 1200, 1500, "night", [3.75, [0.3, 0.12, 1.6, -0.3], 0.5, 0.55, 1.25]],
+    ["service-growth", 1200, 1500, "night", [9.05, [0.6, 0.5, 4.4, -0.05], 0.5, 0.5, 1.25]],
+    ["expansion-blade", 1600, 1800, "none", [4.95, [0.1, 0.35, 1.05, 0.5], 0.5, 0.5, 1.0]],
+    ["differentiation", 1920, 1100, "night", [6.3, [0.55, 0.3, 2.2, 0.35], 0.5, 0.5, 1.0]],
+    ["identity-crown", 1600, 1600, "ivory", [7.55, [0.75, 0.28, 2.7, 0.15], 0.5, 0.5, 1.0]],
+    ["ecosystem", 1920, 1200, "night", [9.05, [1.05, 0.5, 5.0, -0.05], 0.5, 0.5, 1.0]],
+  ];
+  const grounds = { night: nightRoom, ivory: ivoryRoom, stone, strata };
+  for (const [name, w, h, ground, r] of ASSETS) {
+    const li = log(`${name}: rendering`);
+    await new Promise((res) => setTimeout(res, 20));
+    const out = document.createElement("canvas"); out.width = w; out.height = h; const ctx = out.getContext("2d");
+    if (ground !== "none") ctx.drawImage(grounds[ground](Math.round(w / 2), Math.round(h / 2)), 0, 0, w, h);
+    if (r) {
+      const [t, cam, cx, cy, size] = r;
+      const side = Math.round(Math.min(w, h) * size);
+      const img = mineral(t, side, side, cam);
+      ctx.drawImage(img, Math.round(w * cx - side / 2), Math.round(h * cy - side / 2));
+    }
+    const type = ground === "none" ? "image/png" : "image/webp";
+    const ext = ground === "none" ? "png" : "webp";
+    const blob = await new Promise((res) => out.toBlob(res, type, 0.86));
+    const resp = await fetch(`http://127.0.0.1:4174/save?name=${name}.${ext}`, { method: "POST", body: blob });
+    li.textContent = `${name}.${ext}: ${resp.ok ? "saved" : "failed"} (${Math.round(blob.size / 1024)} KB)`;
+    li.className = resp.ok ? "done" : "";
+    const th = document.createElement("canvas"); th.width = 240; th.height = Math.round(240 * h / w); th.getContext("2d").drawImage(out, 0, 0, th.width, th.height); document.getElementById("thumbs").append(th);
+  }
+  log("All done");
+  window.__done = true;
+})();
+</script>

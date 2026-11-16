@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Home page story: the ten scenes of the owner's approved storyboard
+   (components/home/cinema/Scenes.tsx, played by components/home/story/StoryPlayer.tsx;
+   docs/storyboard-direction.md).
+
+   Base rules: every scene is readable in normal flow with its storyboard plate inline
+   (reduced motion, short screens, no JavaScript, STORY_PREVIEW=false, and phones).
+   Motion rules at the end apply only with the pre-paint flag AND the story layer present:
+   on wide screens scenes 02–10 share one sticky portrait frame beside the scrolling text.
+   Plates keep the storyboard's portrait composition; they are never stretched full-bleed.
+   ========================================================================== */
+
+@layer components {
+  /* ---------- Plates ---------- */
+  .sb-plate { position: relative; isolation: isolate; margin: 0; aspect-ratio: 1216 / 2032; max-width: 100%; overflow: hidden; background: var(--color-espresso); }
+  .sb-plate__media, .sb-plate__drift { position: relative; width: 100%; height: 100%; }
+  .sb-plate__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .sb-plate__glint { display: none; }
+
+  /* Ambient life on every plate: a slow camera drift, a band of light passing across, and a glint
+     pulsing on the gold sphere. Transform and opacity only; nothing moves for reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .sb-plate__drift { animation: sb-drift 22s ease-in-out infinite alternate; will-change: transform; }
+    .sb-plate:nth-of-type(even) .sb-plate__drift { animation-duration: 26s; animation-direction: alternate-reverse; }
+    .sb-plate::after {
+      content: ""; position: absolute; top: -10%; bottom: -10%; left: 0; width: 14%; z-index: 1; pointer-events: none;
+      background: var(--color-ivory); opacity: 0.07; filter: blur(14px); mix-blend-mode: screen;
+      transform: translateX(-200%) skewX(-14deg); animation: sb-sweep 11s ease-in-out infinite;
+    }
+    .sb-plate__glint {
+      display: block; position: absolute; width: 9%; aspect-ratio: 1; translate: -50% -50%; rotate: 45deg; pointer-events: none;
+      background: var(--color-gold); filter: blur(9px); mix-blend-mode: screen;
+      animation: sb-glint 4.8s ease-in-out infinite;
+    }
+    .sb-plate__glint--01 { left: 51%; top: 48%; }
+    .sb-plate__glint--02 { left: 42%; top: 62%; }
+    .sb-plate__glint--04 { left: 62%; top: 88%; width: 8%; animation-delay: -1.6s; }
+  }
+  @keyframes sb-drift {
+    from { transform: scale(1.04) translate3d(-1%, 0.6%, 0); }
+    to { transform: scale(1.1) translate3d(1.2%, -1%, 0); }
+  }
+  @keyframes sb-sweep {
+    0%, 55% { transform: translateX(-200%) skewX(-14deg); }
+    100% { transform: translateX(900%) skewX(-14deg); }
+  }
+  @keyframes sb-glint {
+    0%, 100% { opacity: 0.25; scale: 0.8; }
+    50% { opacity: 0.85; scale: 1.25; }
+  }
+  .sb-plate__note {
+    position: absolute; left: 0; bottom: 0; z-index: 2;
+    padding: 6px 10px; background: var(--color-espresso); color: var(--color-travertine);
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+
+  /* ---------- Marks, captions, titles ---------- */
+  .sb-mark { display: flex; align-items: baseline; gap: 12px; margin: 0; }
+  .sb-mark__n { font-family: var(--font-display); font-size: 34px; line-height: 1; color: var(--color-gold); }
+  .sb-mark__name { font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-ivory); }
+  .sb-caption { font-family: var(--font-display); font-size: clamp(22px, 18px + 0.9vw, 30px); line-height: 1.25; color: var(--color-travertine); max-width: 24ch; margin: 0; }
+  .sb-title { font-size: clamp(32px, 22px + 2.2vw, 58px); line-height: 1.04; letter-spacing: -0.01em; color: var(--color-ivory); max-width: 16ch; }
+  .sb-kicker { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-gold); margin: 0; }
+  .sb-subhead { font-size: clamp(22px, 20px + 0.4vw, 26px); color: var(--color-ivory); margin-top: 8px; }
+  .sb-muted { color: var(--color-travertine); margin: 0; }
+  .sb-w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+  .sb-w > span { display: inline-block; }
+
+  /* Primary action on dark scenes: Ivory fill, Espresso label (14.2:1). */
+  .sb-btn-light { background: var(--color-ivory); color: var(--color-espresso); border-color: var(--color-ivory); }
+  .sb-btn-light:hover { background: var(--color-travertine); color: var(--color-espresso); border-color: var(--color-travertine); }
+
+  /* ---------- 01 Origin: the hero ---------- */
+  .sb-hero { padding-block: calc(var(--header-h) + 40px) 72px; }
+  .sb-hero__grid { display: grid; gap: 40px; align-items: center; }
+  .sb-hero__copy { display: grid; gap: 22px; justify-items: start; }
+  .sb-hero__title { max-width: 11ch; color: var(--color-ivory); }
+  .sb-hero__lead { color: var(--color-travertine); }
+  .sb-hero__actions { display: flex; flex-wrap: wrap; gap: 12px 16px; }
+  .sb-hero__media { justify-self: center; width: min(100%, 420px); }
+  @media (max-width: 767px) { .sb-hero__actions .btn { width: 100%; justify-content: center; } }
+  @media (min-width: 1000px) {
+    .sb-hero__grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--gutter); }
+    .sb-hero__media { width: auto; height: min(80svh, 860px); aspect-ratio: 1216 / 2032; justify-self: end; }
+    .sb-hero__media .sb-plate { height: 100%; }
+  }
+
+  /* ---------- 02–10: the story ---------- */
+  .sb-story { padding-block: 32px 96px; }
+  .sb-frame { display: none; }
+  .sb-stages { display: grid; gap: 0; width: 100%; max-width: calc(var(--content-max) + 2 * var(--margin)); margin-inline: auto; padding-inline: var(--margin); }
+  .sb-stage { display: grid; gap: 28px; padding-block: 64px; border-top: 1px solid var(--color-gold); }
+  .sb-stage:first-child { border-top: 0; }
+  .sb-plate--inline { width: min(100%, 460px); }
+  .sb-stage__copy { display: grid; gap: 18px; align-content: start; min-width: 0; }
+  .sb-stage__copy > p.measure { color: var(--color-travertine); }
+  @media (min-width: 900px) {
+    .sb-stage { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; align-items: start; }
+  }
+
+  .sb-list { margin: 4px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--color-gold); max-width: 40rem; }
+  .sb-list li { padding: 10px 0; border-bottom: 1px solid var(--color-gold); color: var(--color-travertine); }
+  .sb-links { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 0; }
+  .sb-service { display: grid; gap: 16px; }
+  .sb-service + .sb-service { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--color-gold); }
+
+  .sb-index { margin: 4px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--color-gold); max-width: 44rem; }
+  .sb-index li { border-bottom: 1px solid var(--color-gold); }
+  .sb-index a { display: grid; grid-template-columns: 2.5rem 1fr; gap: 2px 16px; padding: 14px 0; color: var(--color-ivory); text-decoration: none; }
+  .sb-index a:hover .sb-index__name { text-decoration: underline; text-underline-offset: 6px; }
+  .sb-index__n { font-family: var(--font-display); font-size: 22px; line-height: 1.1; color: var(--color-gold); grid-row: span 2; }
+  .sb-index__desc { color: var(--color-travertine); }
+
+  .sb-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 8px 0 0; padding: 20px 0 0; list-style: none; border-top: 1px solid var(--color-gold); max-width: 44rem; }
+  .sb-steps li { display: grid; gap: 6px; align-content: start; }
+  .sb-steps__n { font-family: var(--font-display); font-size: 28px; line-height: 1; color: var(--color-gold); }
+  .sb-steps h3 { font-size: clamp(22px, 20px + 0.4vw, 26px); color: var(--color-ivory); }
+  .sb-steps p { color: var(--color-travertine); }
+
+  /* ScrollTrigger measures positions by scrolling the page during a refresh; smooth scroll-behavior
+     makes it measure mid-scroll and misplace every scene, so scrolling is instant while it runs. */
+  html[data-cinema="on"]:has([data-story-root]) { scroll-behavior: auto; }
+
+  /* First paint matches the first frame: the hero plate waits as a slit of light. */
+  html[data-cinema="on"]:has([data-story-root]) [data-hero-plate] .sb-plate { clip-path: polygon(52% 0%, 62% 0%, 48% 100%, 38% 100%); }
+
+  /* ==========================================================================
+     Motion on wide screens: one sticky portrait frame beside the scenes.
+     ========================================================================== */
+  @media (min-width: 1000px) {
+    html[data-cinema="on"]:has([data-story-root]) {
+      & .sb-story {
+        display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 56px;
+        width: 100%; max-width: calc(var(--content-max) + 2 * var(--margin)); margin-inline: auto; padding-inline: var(--margin);
+      }
+      & .sb-frame {
+        display: block; position: sticky; top: calc(var(--header-h) + 3svh);
+        height: min(84svh, 900px); aspect-ratio: 1216 / 2032; justify-self: center; align-self: start;
+      }
+      & .sb-frame .sb-plate--framed { position: absolute; inset: 0; }
+      & .sb-frame .sb-plate--framed:not(:first-child) { clip-path: polygon(120% 0%, 140% 0%, 120% 100%, 100% 100%); }
+      & .sb-frame__mark {
+        position: absolute; left: 0; top: -2px; transform: translateY(-100%); margin: 0; padding-bottom: 8px;
+        display: flex; gap: 10px; align-items: baseline;
+      }
+      & .sb-stages { padding-inline: 0; max-width: none; margin: 0; }
+      & .sb-stage { display: grid; grid-template-columns: 1fr; min-height: 92svh; align-content: center; padding-block: 12svh; }
+      & .sb-plate--inline { display: none; }
+    }
+  }
+}

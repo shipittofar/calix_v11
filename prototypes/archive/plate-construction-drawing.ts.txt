@@ -1,0 +1,1004 @@
+import { palette } from "@/lib/palette";
+import { progress, smooth, through } from "./beats";
+
+/**
+ * The story's drawing: how a brand is built, as one architectural construction drawn in
+ * axonometric projection on a 2D canvas. One point on a blank ground (the idea) gathers a
+ * strategy, a mark drawn from construction lines, a palette and type, a system, the places the
+ * brand is carried into, and finally a whole ecosystem, every piece traced back to that point.
+ *
+ * Depth comes from the drawing itself: objects rise out of the ground grid, every solid has a lit
+ * top, a lit side and a darker shade side, and each standing solid casts a flat shadow on the
+ * ground, in the five CALIX colours only (no tints as resting states; the stage behind the drawing
+ * carries a palette-only gradient, see app/components.css). Every vertex and face origin is snapped
+ * to the device-pixel grid, so hairlines are crisp and fills and face content meet their outlines.
+ *
+ * Stateless: the frame is a pure function of the timeline position t (beats.ts), so the same code
+ * draws the scroll-driven stage and the still frames of the static layout.
+ *
+ * World units are arbitrary (about one CSS pixel at a span of 1000); x runs right and towards the
+ * viewer, y left and towards the viewer, z up. The idea sits at the origin.
+ */
+
+const C = palette;
+
+export type Rect = { x: number; y: number; w: number; h: number };
+export type Fonts = { text: string; display: string };
+export type PlateInput = { t: number; rect: Rect; dpr: number; fonts: Fonts; canvasW: number; canvasH: number };
+type Ctx = CanvasRenderingContext2D;
+type Pt = readonly [number, number];
+
+// ---------- Projection and view ----------
+const COS = Math.cos(Math.PI / 6);
+const SIN = 0.5;
+
+type View = { k: number; ox: number; oy: number; dpr: number; off: number; w: number; h: number; fonts: Fonts };
+let V: View = { k: 1, ox: 0, oy: 0, dpr: 1, off: 0.5, w: 1, h: 1, fonts: { text: "sans-serif", display: "serif" } };
+
+const proj = (x: number, y: number, z: number): Pt => [V.ox + (x - y) * COS * V.k, V.oy + ((x + y) * SIN - z) * V.k];
+/** Snaps a coordinate so a 1px line lands on whole device pixels. */
+const snap = (v: number) => (Math.round(v * V.dpr - V.off) + V.off) / V.dpr;
+
+/** Camera keys: [beat, x, y, z, span]. Each value is reached at the end of its beat. */
+const CAMERA: readonly (readonly [string, number, number, number, number])[] = [
+  ["a1", 0, 0, 0, 1500],
+  ["a2", 0, 0, 0, 720],
+  ["a3", 0, 0, 50, 680],
+  ["a4", 0, 0, 30, 900],
+  ["b4", 0, 0, 30, 960],
+  ["b5", 0, -20, 110, 1000],
+  ["c1", 0, -30, 170, 780],
+  ["c2", 0, -30, 190, 540],
+  ["c4", 0, -30, 190, 540],
+  ["c5", -10, -20, 180, 660],
+  ["d1", 170, 90, 60, 900],
+  ["d4", 200, 90, 60, 920],
+  ["d5", -40, 60, 80, 1150],
+  ["d6", -40, 60, 80, 1150],
+  ["e1", -20, 30, 70, 1250],
+  ["e5", -20, 30, 70, 1250],
+  ["f1", -260, -120, 100, 1300],
+  ["f3", -200, -20, 80, 1450],
+  ["f6", -120, 20, 80, 1600],
+  ["g1", -120, 0, 60, 1650],
+  ["g4", -120, 0, 60, 1600],
+  ["h1", 0, 0, 40, 2700],
+  ["h3", 0, 0, 0, 4300],
+  ["h5", 0, 0, 0, 5800],
+];
+const camAxis = (i: 1 | 2 | 3 | 4) => CAMERA.map((key) => [key[0], key[i]] as const);
+const CAM = [camAxis(1), camAxis(2), camAxis(3), camAxis(4)] as const;
+
+function setView(t: number, rect: Rect, dpr: number, fonts: Fonts) {
+  const [cx, cy, cz, span] = CAM.map((axis) => through(t, axis));
+  // Portrait screens frame a little tighter: the composition is wider than it is tall.
+  const k = Math.min(rect.w / (span * (rect.w < rect.h ? 0.8 : 1)), rect.h / (span * 0.62));
+  const X = (cx - cy) * COS;
+  const Y = (cx + cy) * SIN - cz;
+  V = {
+    k,
+    ox: rect.x + rect.w / 2 - X * k,
+    oy: rect.y + rect.h * 0.54 - Y * k,
+    dpr,
+    // A 1px line at an odd device-pixel width sits on half pixels.
+    off: Math.round(dpr) % 2 === 1 ? 0.5 : 0,
+    w: rect.w,
+    h: rect.h,
+    fonts,
+  };
+}
+
+// ---------- Primitives ----------
+function polygon(ctx: Ctx, pts: readonly Pt[]) {
+  ctx.beginPath();
+  pts.forEach(([x, y], i) => (i ? ctx.lineTo(snap(x), snap(y)) : ctx.moveTo(snap(x), snap(y))));
+  ctx.closePath();
+}
+
+function line(ctx: Ctx, a: Pt, b: Pt, color: string, width = 1) {
+  ctx.beginPath();
+  ctx.moveTo(snap(a[0]), snap(a[1]));
+  ctx.lineTo(snap(b[0]), snap(b[1]));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.stroke();
+}
+
+/** A world-space segment drawn from a towards b, `p` of the way. */
+function segment(ctx: Ctx, a: readonly [number, number, number], b: readonly [number, number, number], p: number, color: string, width = 1) {
+  if (p <= 0) return;
+  const e = [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p, a[2] + (b[2] - a[2]) * p] as const;
+  line(ctx, proj(...a), proj(...e), color, width);
+}
+
+/** A circle on the ground plane (z), drawn `p` of the way round. */
+function groundCircle(ctx: Ctx, cx: number, cy: number, z: number, r: number, p: number, color: string) {
+  if (p <= 0) return;
+  const n = Math.max(8, Math.ceil(96 * p));
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const a = -Math.PI / 2 + (i / n) * p * Math.PI * 2;
+    const [x, y] = proj(cx + Math.cos(a) * r, cy + Math.sin(a) * r, z);
+    if (i) ctx.lineTo(x, y);
+    else ctx.moveTo(x, y);
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+/** Small uppercase label in screen space (Jost, Espresso), with an optional Gold leader. */
+function label(ctx: Ctx, text: string, at: Pt, opts: { dx?: number; dy?: number; align?: CanvasTextAlign; leader?: boolean } = {}) {
+  const { dx = 0, dy = -14, align = "center", leader = false } = opts;
+  const x = at[0] + dx;
+  const y = at[1] + dy;
+  if (leader) line(ctx, at, [x, y + 4], C.gold);
+  ctx.font = `500 11px ${V.fonts.text}`;
+  if ("letterSpacing" in ctx) (ctx as Ctx & { letterSpacing: string }).letterSpacing = "1.5px";
+  ctx.textAlign = align;
+  ctx.textBaseline = "bottom";
+  ctx.fillStyle = C.espresso;
+  ctx.fillText(text.toUpperCase(), Math.round(x), Math.round(y));
+  if ("letterSpacing" in ctx) (ctx as Ctx & { letterSpacing: string }).letterSpacing = "0px";
+}
+
+/** Architectural shade hatch: 45° hairlines clipped to a face. */
+function hatch(ctx: Ctx, pts: readonly Pt[], color: string) {
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  if (x1 - x0 < 10 || y1 - y0 < 10) return;
+  ctx.save();
+  polygon(ctx, pts);
+  ctx.clip();
+  ctx.beginPath();
+  const step = 7;
+  for (let c = Math.floor((x0 + y0) / step) * step; c <= x1 + y1; c += step) {
+    ctx.moveTo(snap(c - y1), snap(y1));
+    ctx.lineTo(snap(c - y0), snap(y0));
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ---------- Solids ----------
+type Style = { top: string; left: string; right: string; hatch: string };
+// The shade side is always the darkest face of a solid, so the three faces separate by value.
+const LIGHT: Style = { top: C.ivory, left: C.travertine, right: C.olive, hatch: C.travertine };
+const PANEL: Style = { top: C.travertine, left: C.ivory, right: C.olive, hatch: C.travertine };
+const PLINTH: Style = { top: C.travertine, left: C.ivory, right: C.espresso, hatch: C.gold };
+const swatch = (c: string): Style => {
+  const shade = c === C.ivory ? C.travertine : c === C.olive ? C.espresso : c === C.espresso ? C.olive : C.olive;
+  const dark = shade === C.olive || shade === C.espresso;
+  return { top: c, left: c, right: shade, hatch: dark ? C.ivory : C.espresso };
+};
+
+/** Content drawn on a face, in face units (u right, v down from the top edge). `px` is one screen pixel in face units. */
+type FaceFn = (ctx: Ctx, w: number, h: number, px: number) => void;
+
+type Solid = {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+  d: number;
+  h: number;
+  s: Style;
+  /** 0–1 opacity, for appearing and leaving only (never a resting state). */
+  a?: number;
+  /** The face towards the lower left (plane y = y + d), the one that carries content. */
+  front?: FaceFn;
+  /** The top face, for objects lying flat. */
+  top?: FaceFn;
+};
+
+function onFront(ctx: Ctx, b: Solid, fn: FaceFn) {
+  const [ox0, oy0] = proj(b.x, b.y + b.d, b.z + b.h);
+  const ox = snap(ox0);
+  const oy = snap(oy0);
+  const k = V.k * V.dpr;
+  ctx.save();
+  ctx.setTransform(COS * k, SIN * k, 0, k, ox * V.dpr, oy * V.dpr);
+  ctx.beginPath();
+  ctx.rect(0, 0, b.w, b.h);
+  ctx.clip();
+  fn(ctx, b.w, b.h, 1 / V.k);
+  ctx.restore();
+}
+
+function onTop(ctx: Ctx, b: Solid, fn: FaceFn) {
+  const [ox0, oy0] = proj(b.x, b.y, b.z + b.h);
+  const ox = snap(ox0);
+  const oy = snap(oy0);
+  const k = V.k * V.dpr;
+  ctx.save();
+  ctx.setTransform(COS * k, SIN * k, -COS * k, SIN * k, ox * V.dpr, oy * V.dpr);
+  ctx.beginPath();
+  ctx.rect(0, 0, b.w, b.d);
+  ctx.clip();
+  fn(ctx, b.w, b.d, 1 / V.k);
+  ctx.restore();
+}
+
+function visible(b: Solid) {
+  const [l] = proj(b.x, b.y + b.d, 0);
+  const [r] = proj(b.x + b.w, b.y, 0);
+  const [, top] = proj(b.x, b.y, b.z + b.h);
+  const [, bottom] = proj(b.x + b.w, b.y + b.d, b.z);
+  return r > -20 && l < V.w + 20 && bottom > -20 && top < V.h + 20;
+}
+
+function drawSolid(ctx: Ctx, b: Solid) {
+  const a = b.a ?? 1;
+  if (a <= 0 || !visible(b)) return;
+  ctx.globalAlpha = a;
+  const { x, y, z, w, d } = b;
+  const h = Math.max(b.h, 0);
+  const [x1, y1, z1] = [x + w, y + d, z + h];
+  const top = [proj(x, y, z1), proj(x1, y, z1), proj(x1, y1, z1), proj(x, y1, z1)];
+  ctx.strokeStyle = C.espresso;
+  ctx.lineWidth = 1;
+  if (h > 0.5) {
+    const front = [proj(x, y1, z1), proj(x1, y1, z1), proj(x1, y1, z), proj(x, y1, z)];
+    const side = [proj(x1, y, z1), proj(x1, y1, z1), proj(x1, y1, z), proj(x1, y, z)];
+    polygon(ctx, front);
+    ctx.fillStyle = b.s.left;
+    ctx.fill();
+    if (b.front && h > 4) onFront(ctx, b, b.front);
+    polygon(ctx, front);
+    ctx.stroke();
+    polygon(ctx, side);
+    ctx.fillStyle = b.s.right;
+    ctx.fill();
+    hatch(ctx, side, b.s.hatch);
+    polygon(ctx, side);
+    ctx.stroke();
+  }
+  polygon(ctx, top);
+  ctx.fillStyle = b.s.top;
+  ctx.fill();
+  if (b.top) onTop(ctx, b, b.top);
+  polygon(ctx, top);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+/** Painter's order for solids that don't intersect: back (small x + y) to front, low to high. */
+const depth = (b: Solid) => b.x + b.w + b.y + b.d + b.z * 0.01;
+
+/** Light falls from the front left, so a standing solid's shadow reaches back and to the right, per unit of height. */
+const SHADOW = { dx: 0.5, dy: -0.22 } as const;
+
+/** Convex hull of world points (monotone chain), so a shadow is one clean polygon. */
+function hull(points: readonly Pt[]): Pt[] {
+  const p = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: Pt, a: Pt, b: Pt) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower: Pt[] = [];
+  for (const q of p) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], q) <= 0) lower.pop();
+    lower.push(q);
+  }
+  const upper: Pt[] = [];
+  for (let i = p.length - 1; i >= 0; i--) {
+    const q = p[i];
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], q) <= 0) upper.pop();
+    upper.push(q);
+  }
+  upper.pop();
+  lower.pop();
+  return lower.concat(upper);
+}
+
+/** The flat shadow a standing solid casts on the ground: the hull of its footprint and its shifted top. */
+function drawShadow(ctx: Ctx, b: Solid) {
+  const a = b.a ?? 1;
+  if (a <= 0 || b.z > 0.5 || b.h <= 4 || !visible(b)) return;
+  const { x, y, w, d, h } = b;
+  const footprint: Pt[] = [
+    [x, y],
+    [x + w, y],
+    [x + w, y + d],
+    [x, y + d],
+  ];
+  const top = footprint.map(([px, py]): Pt => [px + SHADOW.dx * h, py + SHADOW.dy * h]);
+  const outline = hull([...footprint, ...top]).map(([px, py]) => proj(px, py, 0));
+  ctx.globalAlpha = a;
+  polygon(ctx, outline);
+  ctx.fillStyle = C.travertine;
+  ctx.fill();
+  hatch(ctx, outline, C.gold);
+  polygon(ctx, outline);
+  ctx.strokeStyle = C.gold;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+// ---------- The mark ----------
+/**
+ * The client's mark: an arch, cut from the construction square and its circle (a half circle on a
+ * rectangle), with the original point at its base. Centred on (cx, cy) in a square of side s.
+ */
+function archPath(ctx: Ctx, cx: number, cy: number, s: number) {
+  const r = s * 0.3;
+  const top = cy - s * 0.42 + r; // centre of the half circle
+  const bottom = cy + s * 0.42;
+  ctx.beginPath();
+  ctx.moveTo(cx - r, bottom);
+  ctx.lineTo(cx - r, top);
+  ctx.arc(cx, top, r, Math.PI, 0);
+  ctx.lineTo(cx + r, bottom);
+  ctx.closePath();
+  return { r, top, bottom };
+}
+
+function drawMark(ctx: Ctx, cx: number, cy: number, s: number, px: number, ink: string = C.espresso) {
+  const { r, bottom } = archPath(ctx, cx, cy, s);
+  ctx.fillStyle = ink;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, bottom - r * 0.42, Math.max(px * 1.5, r * 0.2), 0, Math.PI * 2);
+  ctx.fillStyle = C.gold;
+  ctx.fill();
+}
+
+/** Text lines as hairline bars, for pages and posts. */
+function bars(ctx: Ctx, x: number, y: number, w: number, n: number, gap: number, color: string, px: number) {
+  ctx.fillStyle = color;
+  for (let i = 0; i < n; i++) {
+    const len = i === n - 1 ? w * 0.6 : w;
+    ctx.fillRect(x, y + i * gap, len, Math.max(px, gap * 0.22));
+  }
+}
+
+// ---------- Fixed positions ----------
+const STRATEGY = [
+  [220, 0, "Who"],
+  [0, 220, "What"],
+  [-220, 0, "Why"],
+  [0, -220, "How"],
+] as const;
+const STRATEGY_BEATS = ["b1", "b2", "b3", "b4"] as const;
+
+const BOARD = { x: -150, y: -40, w: 300, d: 20, h: 360 } as const;
+const MARK = { u: 150, v: 165, s: 200 } as const; // on the board's front face
+
+const SWATCHES = [
+  { c: C.espresso, name: "Espresso", h: 150, beat: "d1" },
+  { c: C.olive, name: "Olive", h: 120, beat: "d2" },
+  { c: C.gold, name: "Gold", h: 70, beat: "d3" },
+  { c: C.travertine, name: "Travertine", h: 100, beat: "d4" },
+  { c: C.ivory, name: "Ivory", h: 100, beat: "d4" },
+] as const;
+
+const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+
+// ---------- Scene ----------
+type Scene = { solids: Solid[]; after: ((ctx: Ctx) => void)[] };
+
+function ground(ctx: Ctx, t: number, z: number) {
+  const appear = progress(t, "a1");
+  if (appear <= 0) return;
+  // Grid spacing that stays at least ~34px apart on screen as the camera steps back.
+  let step = 100;
+  while (step * V.k * COS < 34) step *= 2;
+  const extent = Math.max(600, Math.ceil(((V.w / V.k) * 0.9) / step) * step);
+  ctx.globalAlpha = appear;
+  ctx.beginPath();
+  for (let i = -extent; i <= extent; i += step) {
+    const a = proj(i, -extent, z);
+    const b = proj(i, extent, z);
+    const c = proj(-extent, i, z);
+    const d = proj(extent, i, z);
+    ctx.moveTo(snap(a[0]), snap(a[1]));
+    ctx.lineTo(snap(b[0]), snap(b[1]));
+    ctx.moveTo(snap(c[0]), snap(c[1]));
+    ctx.lineTo(snap(d[0]), snap(d[1]));
+  }
+  ctx.strokeStyle = C.travertine;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // The ground's edge frames the blank ground (a1), then gives way to the grid.
+  const edge = 1 - progress(t, "b1");
+  if (edge > 0) {
+    ctx.globalAlpha = edge;
+    const corners = [
+      [-600, -600],
+      [600, -600],
+      [600, 600],
+      [-600, 600],
+    ] as const;
+    corners.forEach((c, i) => {
+      const n = corners[(i + 1) % 4];
+      segment(ctx, [c[0], c[1], z], [n[0], n[1], z], smooth(i / 4, (i + 1) / 4, appear), C.espresso);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // The system's module grid (chapter 5): Gold lines every 100 around the composition.
+  const modules = progress(t, "e1") * (1 - progress(t, "g1"));
+  if (modules > 0) {
+    ctx.globalAlpha = modules;
+    ctx.beginPath();
+    for (let i = -500; i <= 400; i += 100) {
+      const a = proj(i, -300, z);
+      const b = proj(i, 300, z);
+      ctx.moveTo(snap(a[0]), snap(a[1]));
+      ctx.lineTo(snap(b[0]), snap(b[1]));
+    }
+    for (let i = -300; i <= 300; i += 100) {
+      const a = proj(-500, i, z);
+      const b = proj(400, i, z);
+      ctx.moveTo(snap(a[0]), snap(a[1]));
+      ctx.lineTo(snap(b[0]), snap(b[1]));
+    }
+    ctx.strokeStyle = C.gold;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+/** The board's front face: construction, then the mark. */
+const boardFace =
+  (t: number): FaceFn =>
+  (ctx, _w, h, px) => {
+    if (h < BOARD.h * 0.98) return;
+    const { u, v, s } = MARK;
+    const build = progress(t, "c2");
+    const arcs = progress(t, "c3");
+    const resolve = progress(t, "c4");
+    const half = s / 2;
+    ctx.lineWidth = px;
+    // Construction: square, inscribed circle, diagonals and axis, drawn in order. Gold while
+    // drawing, then quietened to Travertine once the mark resolves.
+    const ink = resolve > 0.5 ? C.travertine : C.gold;
+    ctx.strokeStyle = ink;
+    const corners = [
+      [u - half, v - half],
+      [u + half, v - half],
+      [u + half, v + half],
+      [u - half, v + half],
+    ] as const;
+    ctx.beginPath();
+    corners.forEach((c, i) => {
+      const p = smooth(i * 0.12, i * 0.12 + 0.12, build);
+      if (p <= 0) return;
+      const n = corners[(i + 1) % 4];
+      ctx.moveTo(c[0], c[1]);
+      ctx.lineTo(lerp(c[0], n[0], p), lerp(c[1], n[1], p));
+    });
+    ctx.stroke();
+    const circle = smooth(0.48, 0.8, build);
+    if (circle > 0) {
+      ctx.beginPath();
+      ctx.arc(u, v, half, -Math.PI / 2, -Math.PI / 2 + circle * Math.PI * 2);
+      ctx.stroke();
+    }
+    const diag = smooth(0.8, 1, build);
+    if (diag > 0) {
+      ctx.beginPath();
+      ctx.moveTo(u - half, v - half);
+      ctx.lineTo(lerp(u - half, u + half, diag), lerp(v - half, v + half, diag));
+      ctx.moveTo(u + half, v - half);
+      ctx.lineTo(lerp(u + half, u - half, diag), lerp(v - half, v + half, diag));
+      ctx.moveTo(u, v - half);
+      ctx.lineTo(u, lerp(v - half, v + half, diag));
+      ctx.stroke();
+    }
+    if (arcs > 0) {
+      // The arch: the circle's upper half, carried down by the square's sides.
+      const g = archPath(ctx, u, v, s);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(u - half, v - half, s, s * arcs + 1);
+      ctx.clip();
+      archPath(ctx, u, v, s);
+      ctx.strokeStyle = C.espresso;
+      ctx.lineWidth = px;
+      ctx.stroke();
+      ctx.restore();
+      void g;
+    }
+    if (resolve > 0) {
+      const alpha = ctx.globalAlpha;
+      ctx.globalAlpha = alpha * resolve;
+      drawMark(ctx, u, v, s, px);
+      ctx.globalAlpha = alpha;
+    }
+  };
+
+function build(t: number): Scene {
+  const solids: Solid[] = [];
+  const after: ((ctx: Ctx) => void)[] = [];
+
+  // Chapter 7: everything stands on a plinth that rises beneath it.
+  const plinthRise = progress(t, "g1");
+  const base = 30 * plinthRise;
+  if (plinthRise > 0) solids.push({ x: -680, y: -290, w: 1120, d: 590, z: 0, h: base, s: PLINTH });
+
+  // ---------- 1. The idea, and 2. strategy ----------
+  const strategyFade = 1 - progress(t, "c1");
+  if (strategyFade > 0) {
+    STRATEGY.forEach(([x, y, name], i) => {
+      const p = progress(t, STRATEGY_BEATS[i]);
+      if (p <= 0) return;
+      after.push((ctx) => {
+        ctx.globalAlpha = strategyFade;
+        segment(ctx, [0, 0, 0], [x, y, 0], smooth(0, 0.6, p), C.gold);
+        ctx.globalAlpha = 1;
+      });
+      const rise = smooth(0.4, 1, p);
+      solids.push({ x: x - 12, y: y - 12, z: 0, w: 24, d: 24, h: 24 * rise, s: LIGHT, a: strategyFade });
+      after.push((ctx) => {
+        if (rise < 0.6) return;
+        ctx.globalAlpha = strategyFade * smooth(0.6, 1, rise);
+        label(ctx, name, proj(x, y, 24), { dy: -16, leader: true });
+        ctx.globalAlpha = 1;
+      });
+    });
+    const joined = progress(t, "b5");
+    if (joined > 0) {
+      after.push((ctx) => {
+        ctx.globalAlpha = strategyFade;
+        STRATEGY.forEach(([x, y], i) => {
+          const [nx, ny] = STRATEGY[(i + 1) % 4];
+          segment(ctx, [x, y, 0], [nx, ny, 0], smooth(i * 0.15, i * 0.15 + 0.4, joined), C.espresso);
+        });
+        ctx.globalAlpha = 1;
+      });
+    }
+  }
+
+  after.push((ctx) => {
+    // The circle around the idea (a4), gone once the board stands.
+    const ring = progress(t, "a4");
+    const ringFade = 1 - progress(t, "c1");
+    if (ring > 0 && ringFade > 0) {
+      ctx.globalAlpha = ringFade;
+      groundCircle(ctx, 0, 0, 0, 220, ring, C.gold);
+      ctx.globalAlpha = 1;
+    }
+    // The direction (a3), extended upward by the strategy (b5), then absorbed by the board.
+    const dir = progress(t, "a3");
+    const upFade = 1 - progress(t, "c1");
+    if (dir > 0 && upFade > 0) {
+      ctx.globalAlpha = upFade;
+      const top = 140 + 160 * progress(t, "b5");
+      segment(ctx, [0, 0, 0], [0, 0, top], dir, C.gold);
+      ctx.globalAlpha = 1;
+    }
+  });
+
+  // ---------- 3. The mark: the drawing board ----------
+  const boardRise = progress(t, "c1");
+  if (boardRise > 0) {
+    const board: Solid = { ...BOARD, z: base, h: BOARD.h * boardRise, s: PANEL, front: boardFace(t) };
+    solids.push(board);
+    const depthP = progress(t, "c5");
+    if (depthP > 0) {
+      // The mark is given depth: it stands out of the board towards the viewer.
+      after.push((ctx) => drawMarkSolid(ctx, board, 34 * depthP));
+    }
+  }
+
+  // ---------- 4. Colour and type; 5. the system ----------
+  const arrange = progress(t, "e2");
+  const sink = 1 - progress(t, "f1");
+  SWATCHES.forEach((sw, i) => {
+    const p = progress(t, sw.beat);
+    if (p <= 0) return;
+    const i2 = i === 4 && sw.beat === "d4" ? 1 : 0; // the two grounds rise one after the other
+    const rise = smooth(i2 * 0.25, 0.75 + i2 * 0.25, p) * sink;
+    const x = lerp(140 + i * 80, -170 + i * 80, arrange);
+    const y = lerp(140, 170, arrange);
+    if (rise <= 0.01) return;
+    solids.push({ x, y, z: base, w: 60, d: 60, h: sw.h * rise, s: swatch(sw.c) });
+    // Narrow drawings (phones) leave the names to the caption: five labels don't fit.
+    const named = V.w >= 560 ? smooth(0.6, 1, rise) * (1 - progress(t, "e2")) : 0;
+    if (named > 0) {
+      after.push((ctx) => {
+        ctx.globalAlpha = named;
+        // Named on the ground in front of each block, staggered so neighbours never collide.
+        label(ctx, sw.name, proj(x + 30, y + 60, base), { dy: i % 2 ? 40 : 24 });
+        ctx.globalAlpha = 1;
+      });
+    }
+  });
+
+  const typeFaces = [
+    { beat: "d5", x: -440, w: 130, h: 190, font: () => `500 82px ${V.fonts.display}`, name: "Headlines" },
+    { beat: "d6", x: -290, w: 100, h: 130, font: () => `400 46px ${V.fonts.text}`, name: "Text" },
+  ] as const;
+  typeFaces.forEach((tf) => {
+    const p = progress(t, tf.beat);
+    if (p <= 0) return;
+    const rise = p * sink;
+    if (rise <= 0.01) return;
+    const y = lerp(-70, -60, arrange);
+    const solid: Solid = {
+      x: tf.x,
+      y,
+      z: base,
+      w: tf.w,
+      d: 20,
+      h: tf.h * rise,
+      s: PANEL,
+      front: (ctx, w, h) => {
+        if (h < tf.h * 0.9) return;
+        ctx.font = tf.font();
+        ctx.fillStyle = C.espresso;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("Aa", w / 2, h * 0.66);
+      },
+    };
+    solids.push(solid);
+    const named = smooth(0.7, 1, rise) * (1 - progress(t, "e2"));
+    if (named > 0) {
+      after.push((ctx) => {
+        ctx.globalAlpha = named;
+        label(ctx, tf.name, proj(tf.x + tf.w / 2, y + 10, base + tf.h * rise), { dy: -12 });
+        ctx.globalAlpha = 1;
+      });
+    }
+  });
+
+  // Measured spacing (e3): a dimension line in front of the swatch row.
+  const measure = progress(t, "e3") * (1 - progress(t, "f1"));
+  if (measure > 0) {
+    after.push((ctx) => {
+      ctx.globalAlpha = measure;
+      const y = 255;
+      segment(ctx, [-170, y, base], [270, y, base], smooth(0, 0.6, measure), C.espresso);
+      for (let i = 0; i <= 5; i++) {
+        const x = -170 + i * 80 + (i === 5 ? -20 : 0);
+        if (smooth(0, 0.6, measure) * 440 < x + 170) continue;
+        segment(ctx, [x, y - 10, base], [x, y + 10, base], 1, C.espresso);
+      }
+      if (measure > 0.6) label(ctx, "Module 80", proj(50, y + 10, base), { dy: 22 });
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  // A voice (e4): a small card with three lines of copy.
+  const voice = progress(t, "e4") * sink;
+  if (voice > 0.01) {
+    solids.push({
+      x: 250,
+      y: 150,
+      z: base,
+      w: 110,
+      d: 10,
+      h: 120 * voice,
+      s: PANEL,
+      front: (ctx, w, h, px) => {
+        if (h < 110) return;
+        bars(ctx, 14, 26, w - 28, 3, 14, C.espresso, px);
+        ctx.fillStyle = C.gold;
+        ctx.fillRect(14, h - 26, 26, Math.max(px, 2));
+      },
+    });
+    if (voice > 0.8 && progress(t, "f1") < 0.2) after.push((ctx) => label(ctx, "Voice", proj(305, 155, base + 120), { dy: -12 }));
+  }
+
+  // One system (e5): the boundary drawn round it.
+  const frame = progress(t, "e5") * (1 - progress(t, "f1"));
+  if (frame > 0) {
+    after.push((ctx) => {
+      ctx.globalAlpha = Math.min(1, frame * 2);
+      const pts = [
+        [-480, -110],
+        [400, -110],
+        [400, 290],
+        [-480, 290],
+      ] as const;
+      pts.forEach((c, i) => {
+        const n = pts[(i + 1) % 4];
+        segment(ctx, [c[0], c[1], base], [n[0], n[1], base], smooth(i / 4, (i + 1) / 4, frame), C.espresso);
+      });
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  // ---------- 6. Applications ----------
+  const apps: { solid: Solid; anchor: readonly [number, number, number] }[] = [];
+  const rising = (id: string) => progress(t, id);
+
+  const web = rising("f1");
+  if (web > 0) {
+    const s: Solid = {
+      x: -640,
+      y: -200,
+      z: base,
+      w: 260,
+      d: 18,
+      h: 220 * web,
+      s: PANEL,
+      front: (ctx, w, h, px) => {
+        if (h < 200) return;
+        ctx.lineWidth = px;
+        ctx.strokeStyle = C.espresso;
+        ctx.strokeRect(12, 12, w - 24, h - 24);
+        ctx.beginPath();
+        ctx.moveTo(12, 34);
+        ctx.lineTo(w - 12, 34);
+        ctx.stroke();
+        drawMark(ctx, 28, 23, 16, px);
+        bars(ctx, w - 110, 21, 80, 1, 6, C.espresso, px);
+        ctx.font = `500 26px ${V.fonts.display}`;
+        ctx.fillStyle = C.espresso;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("A brand,", 26, 76);
+        ctx.fillText("built well.", 26, 104);
+        bars(ctx, 26, 122, 110, 3, 10, C.olive, px);
+        ctx.fillStyle = C.travertine;
+        ctx.fillRect(w * 0.56, 50, w * 0.44 - 26, h - 86);
+        ctx.fillStyle = C.olive;
+        ctx.fillRect(26, h - 46, 64, 16);
+      },
+    };
+    solids.push(s);
+    apps.push({ solid: s, anchor: [-640 + 28, -182, base + 220 - 23] });
+  }
+
+  const search = rising("f2");
+  if (search > 0) {
+    const s: Solid = {
+      x: 30,
+      y: -230,
+      z: base,
+      w: 240,
+      d: 18,
+      h: 200 * search,
+      s: PANEL,
+      front: (ctx, w, h, px) => {
+        if (h < 180) return;
+        ctx.lineWidth = px;
+        ctx.strokeStyle = C.espresso;
+        ctx.strokeRect(16, 18, w - 32, 22);
+        // First result: the brand, with its mark.
+        drawMark(ctx, 28, 62, 16, px);
+        bars(ctx, 42, 56, w - 74, 2, 9, C.espresso, px);
+        ctx.fillStyle = C.gold;
+        ctx.fillRect(42, 76, 50, Math.max(px, 1.5));
+        bars(ctx, 16, 92, w - 32, 2, 9, C.olive, px);
+        // An AI answer that cites it.
+        ctx.fillStyle = C.olive;
+        ctx.fillRect(16, 122, w - 32, h - 140);
+        drawMark(ctx, 32, 140, 16, px, C.ivory);
+        bars(ctx, 48, 134, w - 82, 3, 10, C.ivory, px);
+      },
+    };
+    solids.push(s);
+    apps.push({ solid: s, anchor: [30 + 28, -212, base + 200 - 62] });
+  }
+
+  const pages = rising("f3");
+  [0, 1, 2].forEach((i) => {
+    const p = smooth(i * 0.25, 0.5 + i * 0.25, pages);
+    if (p <= 0) return;
+    const s: Solid = {
+      x: -580,
+      y: 70 + i * 34,
+      z: base,
+      w: 110,
+      d: 8,
+      h: 150 * p,
+      s: PANEL,
+      front: (ctx, w, h, px) => {
+        if (h < 140) return;
+        drawMark(ctx, 20, 22, 18, px);
+        ctx.font = `500 15px ${V.fonts.display}`;
+        ctx.fillStyle = C.espresso;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(["Notes", "Journal", "Guides"][i], 14, 56);
+        bars(ctx, 14, 68, w - 28, 6, 10, C.olive, px);
+      },
+    };
+    solids.push(s);
+    if (i === 2) apps.push({ solid: s, anchor: [-580 + 20, 70 + 68 + 8, base + 150 - 22] });
+  });
+
+  const print = rising("f4");
+  if (print > 0) {
+    const h = 8 * print;
+    const s: Solid = {
+      x: -150,
+      y: 120,
+      z: base,
+      w: 160,
+      d: 96,
+      h,
+      s: { ...PANEL, top: C.ivory },
+      top: (ctx, w, d, px) => {
+        if (print < 0.9) return;
+        drawMark(ctx, w / 2, d * 0.4, 34, px);
+        bars(ctx, w / 2 - 34, d * 0.72, 68, 2, 8, C.espresso, px);
+      },
+    };
+    solids.push(s);
+    apps.push({ solid: s, anchor: [-70, 158, base + h] });
+  }
+
+  const sign = rising("f5");
+  if (sign > 0) {
+    const post = smooth(0, 0.5, sign);
+    solids.push({ x: 300, y: 76, z: base, w: 12, d: 12, h: 170 * post, s: LIGHT });
+    const panel = smooth(0.5, 1, sign);
+    if (panel > 0) {
+      const s: Solid = {
+        x: 246,
+        y: 88,
+        z: base + 160,
+        w: 120,
+        d: 12,
+        h: 100 * panel,
+        s: { ...PANEL, left: C.olive },
+        front: (ctx, w, h, px) => {
+          if (h < 90) return;
+          drawMark(ctx, w / 2, h / 2 - 4, 58, px, C.ivory);
+        },
+      };
+      solids.push(s);
+      apps.push({ solid: s, anchor: [306, 100, base + 160 + 50] });
+    }
+  }
+
+  const social = rising("f6");
+  [0, 1, 2].forEach((i) => {
+    const p = smooth(i * 0.2, 0.6 + i * 0.2, social);
+    if (p <= 0) return;
+    const dark = i === 1;
+    const s: Solid = {
+      x: 40 + i * 82,
+      y: 250,
+      z: base,
+      w: 72,
+      d: 8,
+      h: 72 * p,
+      s: { ...PANEL, left: dark ? C.olive : C.ivory },
+      front: (ctx, w, h, px) => {
+        if (h < 66) return;
+        drawMark(ctx, w / 2, h * 0.42, 28, px, dark ? C.ivory : C.espresso);
+        bars(ctx, 12, h - 16, w - 24, 1, 6, dark ? C.ivory : C.espresso, px);
+      },
+    };
+    solids.push(s);
+    if (i === 1) apps.push({ solid: s, anchor: [40 + 82 + 36, 258, base + 72 * 0.58] });
+  });
+
+  // ---------- 7. Presented: every piece traced back to the one point ----------
+  const traced = progress(t, "g2");
+  const untraced = progress(t, "g4");
+  if (traced > 0 && untraced < 1) {
+    after.push((ctx) => {
+      ctx.globalAlpha = 1 - untraced;
+      apps.forEach(({ anchor }, i) => {
+        const p = smooth(i * 0.08, i * 0.08 + 0.5, traced);
+        segment(ctx, [anchor[0], anchor[1], anchor[2]], [0, 0, base], p, C.gold);
+      });
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  // ---------- 8. The ecosystem ----------
+  const rings = [
+    { beat: "h2", r: 950, n: 6, phase: 0.3 },
+    { beat: "h3", r: 1600, n: 10, phase: 0.1 },
+    { beat: "h4", r: 2300, n: 14, phase: 0.45 },
+  ] as const;
+  const kinds = [C.espresso, C.olive, C.gold, C.travertine] as const;
+  rings.forEach((ring, ri) => {
+    const p = progress(t, ring.beat);
+    if (p <= 0) return;
+    for (let j = 0; j < ring.n; j++) {
+      const q = smooth((j / ring.n) * 0.6, (j / ring.n) * 0.6 + 0.4, p);
+      if (q <= 0) continue;
+      const a = ((j + ring.phase) / ring.n) * Math.PI * 2;
+      const cx = Math.round((Math.cos(a) * ring.r) / 100) * 100;
+      const cy = Math.round((Math.sin(a) * ring.r) / 100) * 100;
+      const variant = (j + ri) % 3;
+      solids.push({ x: cx - 110, y: cy - 110, z: 0, w: 220, d: 220, h: 18 * q, s: PLINTH });
+      solids.push({
+        x: cx - 90,
+        y: cy - 40,
+        z: 18 * q,
+        w: variant === 2 ? 70 : 110,
+        d: 10,
+        h: (variant === 2 ? 70 : 100) * q,
+        s: { ...PANEL, left: variant === 1 ? C.olive : C.ivory },
+        front: (ctx, w, h, px) => {
+          if (q < 0.95) return;
+          drawMark(ctx, w / 2, h * 0.45, Math.min(w, h) * 0.5, px, variant === 1 ? C.ivory : C.espresso);
+        },
+      });
+      solids.push({ x: cx + 30, y: cy + 30, z: 18 * q, w: 50, d: 50, h: (40 + variant * 20) * q, s: swatch(kinds[(j + ri) % 4]) });
+      if (q >= 1) {
+        after.push((ctx) => segment(ctx, [cx - 35, cy - 30, 70], [0, 0, base], progress(t, ring.beat, "h5"), C.gold));
+      }
+    }
+  });
+
+  // The idea's name, at the start and again at the very end.
+  after.push((ctx) => {
+    const placed = progress(t, "a2");
+    const opening = smooth(0.5, 1, placed) * (1 - progress(t, "a4"));
+    const closing = progress(t, "h5");
+    if (opening <= 0 && closing <= 0) return;
+    const at = proj(0, 0, base);
+    ctx.globalAlpha = Math.min(1, opening + closing);
+    if (closing > 0) label(ctx, "The idea", at, { dx: 70, dy: -70, align: "left", leader: true });
+    else label(ctx, "The idea", at, { dx: 14, dy: -8, align: "left" });
+    ctx.globalAlpha = 1;
+  });
+
+  return { solids, after };
+}
+
+/** The idea itself: the Gold point on the ground (or the plinth), drawn in depth order under the solids. */
+function drawPoint(ctx: Ctx, t: number) {
+  const placed = progress(t, "a2");
+  if (placed <= 0) return;
+  const [x, y] = proj(0, 0, 30 * progress(t, "g1"));
+  const r = 4.5 * smooth(0, 0.7, placed) * (1 + 0.6 * progress(t, "h5"));
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = C.gold;
+  ctx.fill();
+}
+
+/** The mark standing out of the board by `depth` units: stacked Olive sides, an Espresso face. */
+function drawMarkSolid(ctx: Ctx, board: Solid, depthUnits: number) {
+  const steps = Math.max(2, Math.ceil(depthUnits / 2));
+  for (let i = 0; i <= steps; i++) {
+    const offset = (depthUnits * i) / steps;
+    const face: Solid = { ...board, y: board.y + offset };
+    onFront(ctx, face, (c, _w, _h, px) => {
+      if (i < steps) {
+        archPath(c, MARK.u, MARK.v, MARK.s);
+        c.fillStyle = C.olive;
+        c.fill();
+      } else {
+        drawMark(c, MARK.u, MARK.v, MARK.s, px);
+        archPath(c, MARK.u, MARK.v, MARK.s);
+        c.strokeStyle = C.espresso;
+        c.lineWidth = px;
+        c.stroke();
+      }
+    });
+  }
+}
+
+/**
+ * Draws the frame at timeline position t over the whole canvas. Returns true when the frame is
+ * complete (always, for this drawing; the player redraws incomplete frames).
+ */
+export function drawPlate(ctx: Ctx, { t, rect, dpr, fonts, canvasW, canvasH }: PlateInput): boolean {
+  setView(t, rect, dpr, fonts);
+  // Transparent: the stage's own palette gradient (app/components.css) is the ground.
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ground(ctx, t, 0);
+  const { solids, after } = build(t);
+  // Shadows lie on the ground, so they go under every solid.
+  solids.forEach((s) => drawShadow(ctx, s));
+  // Plinths first (they are low and under everything), then the rest back to front.
+  const isPlinth = (s: Solid) => s.s === PLINTH;
+  solids.filter(isPlinth).sort((a, b) => depth(a) - depth(b)).forEach((s) => drawSolid(ctx, s));
+  drawPoint(ctx, t);
+  solids
+    .filter((s) => !isPlinth(s))
+    .sort((a, b) => depth(a) - depth(b))
+    .forEach((s) => drawSolid(ctx, s));
+  after.forEach((fn) => fn(ctx));
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  return true;
+}

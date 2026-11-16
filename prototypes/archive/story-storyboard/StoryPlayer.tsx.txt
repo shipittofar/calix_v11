@@ -1,0 +1,147 @@
+"use client";
+
+import { useEffect } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { CINEMA_MOTION_QUERY } from "@/lib/motion";
+
+/**
+ * Plays the home page's ten storyboard scenes (components/home/cinema/Scenes.tsx) with GSAP
+ * ScrollTrigger:
+ * - 01 Origin: the hero plate opens on load through a narrow diagonal slit of light and settles
+ *   from a slight push-in. The headline is never gated by it.
+ * - Wide screens: scenes 02–10 share a sticky portrait frame. As each scene's text crosses the
+ *   middle of the screen, its plate wipes in on a diagonal over the last one and settles from a
+ *   push-in, scrubbed by scroll; the frame's mark names the current scene.
+ * - Phones and narrow screens: each scene's own plate reveals on the same diagonal as it scrolls in.
+ * Titles rise once out of a word mask. Buttons and the header never animate; scrolling is never
+ * intercepted. When CINEMA_MOTION_QUERY stops matching, everything reverts to the static layout.
+ */
+export function StoryPlayer() {
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    const html = document.documentElement;
+    const mm = gsap.matchMedia();
+    mm.add({ motion: CINEMA_MOTION_QUERY, wide: "(min-width: 1000px)" }, (context) => {
+      const { motion, wide } = context.conditions as { motion: boolean; wide: boolean };
+      if (!motion) {
+        delete html.dataset.cinema;
+        return;
+      }
+      html.dataset.cinema = "on";
+      html.dataset.cinemaReady = "1";
+      const undo = [hero(), wide ? frame() : inlinePlates(), titles()];
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+      return () => undo.forEach((fn) => fn?.());
+    });
+    return () => {
+      mm.revert();
+      delete html.dataset.cinemaReady;
+    };
+  }, []);
+  return null;
+}
+
+const hidden = "polygon(120% 0%, 140% 0%, 120% 100%, 100% 100%)";
+const shown = "polygon(-40% 0%, 140% 0%, 120% 100%, -60% 100%)";
+const slit = "polygon(52% 0%, 62% 0%, 48% 100%, 38% 100%)";
+const escape = (w: string) => w.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+
+/** 01: the hero plate opens through a slit of light, once, on load. */
+function hero() {
+  const plate = document.querySelector<HTMLElement>("[data-hero-plate] .sb-plate");
+  const img = plate?.querySelector<HTMLElement>(".sb-plate__media");
+  if (!plate || !img) return undefined;
+  gsap.fromTo(plate, { clipPath: slit }, { clipPath: shown, duration: 1.8, ease: "power3.inOut", delay: 0.15 });
+  gsap.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 2.4, ease: "power2.out", delay: 0.15 });
+  return undefined;
+}
+
+/** Wide screens: one sticky frame; each scene's plate wipes in over the previous one. */
+function frame() {
+  const frameEl = document.querySelector<HTMLElement>("[data-frame]");
+  if (!frameEl) return undefined;
+  const plates = Array.from(frameEl.querySelectorAll<HTMLElement>(".sb-plate--framed"));
+  const markN = frameEl.querySelector<HTMLElement>("[data-frame-mark] .sb-mark__n");
+  const markName = frameEl.querySelector<HTMLElement>("[data-frame-mark] .sb-mark__name");
+  const stages = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
+  const names = stages.map((s) => s.querySelector(".sb-mark__name")?.textContent ?? "");
+  const setMark = (i: number) => {
+    if (!markN || !markName) return;
+    const n = stages[i]?.dataset.stage ?? "";
+    if (markN.textContent !== n) {
+      markN.textContent = n;
+      markName.textContent = names[i] ?? "";
+    }
+  };
+
+  plates.forEach((plate, i) => {
+    const img = plate.querySelector<HTMLElement>(".sb-plate__media");
+    if (i === 0) {
+      if (img) gsap.fromTo(img, { scale: 1.08 }, { scale: 1, ease: "none", scrollTrigger: { trigger: stages[0], start: "top bottom", end: "bottom center", scrub: 0.8 } });
+      return;
+    }
+    const stage = stages[i];
+    if (!stage) return;
+    const prevImg = plates[i - 1]?.querySelector<HTMLElement>(".sb-plate__media");
+    const tl = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        trigger: stage,
+        start: "top 75%",
+        end: "top 25%",
+        scrub: 0.8,
+        onUpdate: (self) => setMark(self.progress > 0.5 ? i : i - 1),
+      },
+    });
+    tl.fromTo(plate, { clipPath: hidden }, { clipPath: shown, ease: "power2.inOut", immediateRender: false }, 0);
+    if (img) tl.fromTo(img, { scale: 1.16 }, { scale: 1, immediateRender: false }, 0);
+    if (prevImg) tl.fromTo(prevImg, { scale: 1 }, { scale: 1.06, immediateRender: false }, 0);
+  });
+  setMark(0);
+  return () => {
+    plates.forEach((p) => p.style.removeProperty("clip-path"));
+  };
+}
+
+/** Narrow screens: each scene's own plate reveals on a diagonal as it scrolls in. */
+function inlinePlates() {
+  document.querySelectorAll<HTMLElement>(".sb-plate--inline").forEach((plate) => {
+    const img = plate.querySelector<HTMLElement>(".sb-plate__media");
+    gsap.fromTo(
+      plate,
+      { clipPath: "polygon(0% 100%, 0% 100%, -20% 100%, -20% 100%)" },
+      { clipPath: "polygon(0% -20%, 140% -20%, 120% 100%, -20% 100%)", ease: "power2.out", scrollTrigger: { trigger: plate, start: "top 92%", end: "top 45%", scrub: 0.8 } },
+    );
+    if (img) gsap.fromTo(img, { scale: 1.14 }, { scale: 1, ease: "none", scrollTrigger: { trigger: plate, start: "top bottom", end: "bottom 40%", scrub: 0.8 } });
+  });
+  return undefined;
+}
+
+/** Scene titles rise once, word by word, out of a mask. The text stays the accessible name. */
+function titles() {
+  const restores: (() => void)[] = [];
+  document.querySelectorAll<HTMLElement>(".sb-stage .sb-title").forEach((el) => {
+    const original = el.innerHTML;
+    const text = el.textContent ?? "";
+    el.setAttribute("aria-label", text);
+    el.innerHTML = text
+      .trim()
+      .split(/\s+/)
+      .map((w) => `<span class="sb-w" aria-hidden="true"><span>${escape(w)}</span></span>`)
+      .join(" ");
+    const words = el.querySelectorAll(".sb-w > span");
+    gsap.set(words, { yPercent: 110 });
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 82%",
+      once: true,
+      onEnter: () => gsap.to(words, { yPercent: 0, duration: 1.0, ease: "power3.out", stagger: 0.05 }),
+    });
+    restores.push(() => {
+      el.innerHTML = original;
+      el.removeAttribute("aria-label");
+    });
+  });
+  return () => restores.forEach((fn) => fn());
+}

@@ -1,0 +1,31 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { StorySlot } from "@/components/home/story/StorySlot";
+import { Origin, Scenes } from "@/components/home/cinema/Scenes";
+import { FinalCta } from "@/components/home/HomeSections";
+
+export const metadata: Metadata = pageMetadata({
+  title: "CALIX — Brand identity, web design and growth studio",
+  absoluteTitle: true,
+  description:
+    "CALIX connects brand strategy and identity, website design and development, digital marketing, SEO and GEO, and conversion optimisation for growing brands.",
+  path: "/",
+});
+
+/**
+ * The home page as the ten scenes of the approved storyboard (docs/storyboard-direction.md):
+ * 01 Origin (hero) · 02 Awakening · 03 Discovery (services) · 04 Foundation (process) ·
+ * 05 Character (work) · 06–09 Identity, Language, Expression, Ecosystem (the five services) ·
+ * 10 Beyond (credibility) · then the enquiry band.
+ */
+export default function HomePage() {
+  return (
+    <>
+      {/* The motion layer: on in every build unless STORY_PREVIEW=false (next.config.ts). */}
+      <StorySlot />
+      <Origin />
+      <Scenes />
+      <FinalCta />
+    </>
+  );
+}

@@ -1,0 +1,302 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CALIX Cinematic Direction</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
+<style>
+  /* Layout: one editorial column of numbered steps; tables and direction notes on a 12-column grid. */
+  :root {
+    --espresso: #2E1E14; --ivory: #F6F1E8; --travertine: #D9C9A8; --gold: #B08D57; --olive: #4B5236;
+    --font-display: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+    --font-text: Jost, Futura, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: linear-gradient(180deg, var(--ivory) 0%, var(--ivory) 30%, var(--travertine) 100%); background-color: var(--ivory); color: var(--espresso); font-family: var(--font-text); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+  @media (min-width: 900px) { .wrap { padding-left: max(48px, env(safe-area-inset-left, 0px)); padding-right: max(48px, env(safe-area-inset-right, 0px)); } }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(42px, 28px + 4vw, 88px); line-height: 1.02; letter-spacing: -0.015em; }
+  h2 { font-size: clamp(32px, 24px + 2.2vw, 54px); line-height: 1.06; }
+  h3 { font-size: clamp(22px, 20px + 0.5vw, 27px); line-height: 1.2; }
+  p { margin: 0; }
+  .label { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--olive); }
+  .lead { font-size: clamp(18px, 17px + 0.3vw, 21px); line-height: 1.55; max-width: 38rem; }
+  .small { font-size: 15px; } .muted { color: var(--olive); }
+  .masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 28px 18px; border-bottom: 1px solid var(--travertine); }
+  .wordmark { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.22em; font-weight: 600; }
+  .intro { display: grid; gap: 24px; padding-block: 72px 56px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn { font: 500 12px/1 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; text-decoration: none; border: 1px solid var(--espresso); color: var(--espresso); }
+  .btn.primary { background: var(--olive); border-color: var(--olive); color: var(--ivory); }
+  .btn:hover { background: var(--espresso); border-color: var(--espresso); color: var(--ivory); }
+  .btn:focus-visible { outline: 2px solid var(--espresso); outline-offset: 3px; }
+  section { padding-block: 64px; border-top: 1px solid var(--travertine); }
+  .head { display: grid; gap: 14px; margin-bottom: 32px; max-width: 48rem; }
+  .two { display: grid; gap: 40px; } @media (min-width: 900px) { .two { grid-template-columns: 1fr 1fr; gap: 56px; } }
+  .list { margin: 12px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--espresso); }
+  .list li { padding: 12px 0; border-bottom: 1px solid var(--travertine); font-size: 16px; line-height: 1.55; }
+  .list b { font-weight: 500; }
+  .table-wrap { overflow-x: auto; border-top: 1px solid var(--espresso); }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 15px; line-height: 1.5; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 18px 12px 0; border-bottom: 1px solid var(--travertine); }
+  thead th { font: 500 12px/1.3 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); }
+  tbody th { font-weight: 500; width: 12rem; }
+  td.num, th.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .frames { display: grid; gap: 0; border-top: 1px solid var(--espresso); }
+  .frame { display: grid; grid-template-columns: 3rem 1fr; gap: 4px 16px; padding: 14px 0; border-bottom: 1px solid var(--travertine); }
+  .frame .n { font-family: var(--font-display); font-size: 26px; line-height: 1.1; color: var(--gold); grid-row: span 2; }
+  .frame b { font-weight: 500; }
+  @media (min-width: 900px) { .frame { grid-template-columns: 3rem 16rem 1fr; } .frame .n { grid-row: auto; } }
+  .dir { padding-block: 56px; border-top: 1px solid var(--travertine); }
+  .dir-head { display: grid; gap: 12px; margin-bottom: 28px; } @media (min-width: 900px) { .dir-head { grid-template-columns: 5fr 7fr; column-gap: 56px; align-items: end; } }
+  .dir-head .letter { font-family: var(--font-display); font-size: 34px; color: var(--gold); line-height: 1; }
+  .board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } @media (min-width: 760px) { .board { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .tile { position: relative; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; border: 1px solid var(--espresso); }
+  .tile canvas { width: 100%; height: 100%; display: block; }
+  .tile figcaption { position: absolute; left: 8px; bottom: 8px; right: 8px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; background: var(--ivory); color: var(--espresso); padding: 4px 6px; }
+  .tile.type { display: grid; align-content: center; justify-items: start; padding: 16px; gap: 6px; }
+  .tile.type .big { font-family: var(--font-display); font-size: clamp(30px, 22px + 2vw, 46px); line-height: 1; }
+  .tile.type .sm { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .notes { display: grid; margin-top: 28px; border-top: 1px solid var(--espresso); } @media (min-width: 760px) { .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; } } @media (min-width: 1100px) { .notes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .note { padding: 16px 0 18px; border-bottom: 1px solid var(--travertine); min-width: 0; }
+  .note h4 { margin: 0 0 8px; font: 500 12px/1.3 var(--font-text); letter-spacing: 0.16em; text-transform: uppercase; color: var(--olive); }
+  .note p, .note li { font-size: 15.5px; line-height: 1.55; } .note ul { margin: 0; padding-left: 1.1em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 8px; }
+  .chip { display: grid; grid-template-columns: 22px auto; column-gap: 8px; align-items: center; font-size: 13px; line-height: 1.25; }
+  .chip i { width: 22px; height: 22px; border: 1px solid var(--espresso); grid-row: span 2; display: block; }
+  .chip small { color: var(--olive); font-size: 12px; }
+  .seq { margin: 24px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--espresso); }
+  .seq li { display: grid; grid-template-columns: 11rem 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--travertine); font-size: 15.5px; }
+  .seq li b { font-weight: 500; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; padding-top: 3px; }
+  @media (max-width: 640px) { .seq li { grid-template-columns: 1fr; gap: 2px; } }
+  .proto { display: grid; gap: 18px; padding: 32px; background: var(--espresso); color: var(--ivory); }
+  .proto .label { color: var(--travertine); }
+  .proto .btn { border-color: var(--ivory); color: var(--ivory); }
+  .proto .btn.primary { background: var(--ivory); color: var(--olive); border-color: var(--ivory); }
+  .proto .btn:hover { background: var(--travertine); color: var(--espresso); }
+  .proto .btn:focus-visible { outline-color: var(--ivory); }
+  footer { padding-block: 48px 72px; border-top: 1px solid var(--travertine); }
+</style>
+
+<div class="wrap">
+  <header class="masthead"><span class="wordmark">CALIX</span><span class="label">Cinematic direction · Awaiting approval</span></header>
+
+  <div class="intro">
+    <p class="label">Steps 1–4 of the revised brief · 13 November 2026</p>
+    <h1>A brand's evolution, told the way a film cuts.</h1>
+    <p class="lead">The reference's motion language, rebuilt around the CALIX story: from an idea to an identity to an ecosystem, spread across the whole home page instead of one growing object. Below: what I read from the reference, what the current site keeps, the motion system, three directions, and a working prototype of the first three stages.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="prototype.html">Open the working prototype</a>
+      <span class="small muted">Origin → Awakening → Foundation, scroll-driven.</span>
+    </div>
+  </div>
+
+  <!-- Step 1 -->
+  <section aria-labelledby="s1">
+    <div class="head">
+      <p class="label">Step 1 · Analysis</p>
+      <h2 id="s1">What the reference does.</h2>
+      <p class="small muted">Read from nine distinct frames of a phone recording of the reference site (a screen filmed on a desk, so detail is soft). Six frames were TikTok end cards and twelve were duplicates. I could not see the motion itself, so pacing and what is scroll-driven versus timed are inferred from frames caught mid-transition.</p>
+    </div>
+    <div class="frames">
+      <div class="frame"><span class="n">1</span><b>Hero on a colour field</b><span>A saturated sky field fills the screen; a single figure stands at the right edge pulling a heavy drape. A modest serif headline sits low-left with one line of copy and one button. Most of the screen is image, not text.</span></div>
+      <div class="frame"><span class="n">2</span><b>Object-led wipe</b><span>The drape from the hero sweeps across the screen and becomes the transition itself: an element inside the picture acts as the mask that clears one scene and reveals the next.</span></div>
+      <div class="frame"><span class="n">3</span><b>Grain dissolve</b><span>Scenes change through a stippled, dithered edge rather than a fade: the sky field breaks into grain at the screen's edge as the next scene comes through.</span></div>
+      <div class="frame"><span class="n">4</span><b>Editorial cut-out</b><span>A painted figure holding a gilded fruit, cropped hard at the right on an empty light ground; a short two-line serif line at left. Negative space carries the composition.</span></div>
+      <div class="frame"><span class="n">5</span><b>Full-bleed with small type</b><span>A dense full-bleed picture of a fruiting tree with a very small headline placed inside the image, so the picture reads first and the words second.</span></div>
+      <div class="frame"><span class="n">6</span><b>Push-in between styles</b><span>An engraved scene of builders moving a giant golden object becomes a full-colour close-up of the same scaffold: the camera pushes into the image, and the drawing style changes on the way in.</span></div>
+      <div class="frame"><span class="n">7</span><b>Plate and colour rising</b><span>A square mosaic plate beside a statement on a cream ground, while the next scene's colour rises from the bottom through a grainy edge.</span></div>
+      <div class="frame"><span class="n">8</span><b>Macro detail</b><span>A hand-scale close-up (grafting a branch) fills the screen: the story zooms from idea to craft.</span></div>
+      <div class="frame"><span class="n">9</span><b>One object, one story</b><span>The same object recurs in every scene, from tree to hand to gold to mosaic, so the visitor follows one thing growing and being made. That continuity matters more than any single effect.</span></div>
+    </div>
+
+    <div class="two" style="margin-top:40px">
+      <div>
+        <h3>Keep from the current site</h3>
+        <ul class="list">
+          <li><b>Identity:</b> the five colours, Cormorant and Jost, the Ivory to Travertine ground, the header with its outline "Start a project".</li>
+          <li><b>Content:</b> hero promise, five services, selected work, process, credibility, the enquiry flow and all copy rules (no invented proof).</li>
+          <li><b>Engineering:</b> the scroll-follow approach, reduced-motion and no-JavaScript fallbacks, the story off-switch and its checks.</li>
+          <li><b>The Mineral sculpture,</b> demoted from protagonist to one supporting 3D element, as the brief asks.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Redesign</h3>
+        <ul class="list">
+          <li><b>Structure:</b> the seven stages spread over the whole home page, in three pinned acts with calm editorial sections between them.</li>
+          <li><b>Imagery:</b> full-bleed photography, renders and textures replace the single object on an empty ground.</li>
+          <li><b>Motion:</b> diagonal and object-led wipes, grain dissolves, push-ins and masked type replace the fade and the sticky drawing.</li>
+          <li><b>Composition:</b> asymmetric, overlapping, full-bleed and light-dark alternation instead of stacked rectangular sections.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 2 -->
+  <section aria-labelledby="s2">
+    <div class="head">
+      <p class="label">Step 2 · Motion system</p>
+      <h2 id="s2">Six transitions, one grammar.</h2>
+      <p class="small muted">Scroll position drives every scene change; only typography reveals play on their own (once, triggered), so text is never half-drawn while reading. One rule ties it together: text leaves before an image transition starts, and the next text arrives after it lands.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Transition</th><th scope="col">How it works</th><th scope="col">Used for</th><th scope="col" class="num">Scroll</th><th scope="col">Easing</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">T1 Diagonal wipe</th><td>The next scene enters on a slanted clip-path edge (about 30% skew) across the full screen</td><td>Light scene to light scene; a change of idea</td><td class="num">60–80vh</td><td>power2.inOut</td></tr>
+          <tr><th scope="row">T2 Object-led wipe</th><td>An element of the picture (a slab, a blade, a drape) sweeps across and becomes the mask</td><td>The signature cut; at most twice per page</td><td class="num">80–100vh</td><td>power3.inOut</td></tr>
+          <tr><th scope="row">T3 Grain dissolve</th><td>A stippled threshold mask rises from one edge, noise-shaped, 2px grain</td><td>Light to dark and back; a change of depth</td><td class="num">70–90vh</td><td>power1.inOut</td></tr>
+          <tr><th scope="row">T4 Push-in match cut</th><td>An image scales past its frame; the next scene begins at that scale and settles</td><td>Moving closer to the same subject (idea to detail)</td><td class="num">80–120vh</td><td>power1.in, then power2.out</td></tr>
+          <tr><th scope="row">T5 Layered panels</th><td>Slanted panels rise at different speeds, then contract or expand to full bleed</td><td>One idea becoming several facets</td><td class="num">100–140vh</td><td>power3.out in, power2.in out</td></tr>
+          <tr><th scope="row">T6 Plate contraction</th><td>Full bleed contracts into a framed plate on the ivory ground</td><td>Ending an act; handing over to calm content</td><td class="num">60–70vh</td><td>power2.inOut</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="notes">
+      <div class="note"><h4>Image movement</h4><p>Ambient zoom from 1.12 to 1.0 across a scene; pans no wider than 4%; three parallax speeds (0.9, 1.0, 1.1) for layered panels. No rotation, no bounce.</p></div>
+      <div class="note"><h4>Typography</h4><p>Headlines rise line by line out of a mask (0.9–1.1 s, 0.08–0.12 s stagger); short lines by word (0.05 s). Labels fade and move 12 px. Buttons and the header never animate.</p></div>
+      <div class="note"><h4>Timing</h4><p>Scrub smoothing 0.8 s. A scene takes about one viewport of scroll, a transition 60–120% of one. A pinned act holds 2–3 stages and lasts 5–6.5 viewports, with the skip link kept.</p></div>
+      <div class="note"><h4>Choreography</h4><p>Each act runs: image settles, text in, hold, text out, transition. One transition type per hand-off, chosen by meaning (closer, sideways, deeper), never at random.</p></div>
+      <div class="note"><h4>Phones</h4><p>Same story, shorter acts (5.2 viewports), panels stacked, smaller zooms; diagonal wipes keep their angle, dissolves keep their grain.</p></div>
+      <div class="note"><h4>Reduced motion</h4><p>No pin, no scrub: each scene is a full-height still in order, every text visible. Without JavaScript, the same.</p></div>
+    </div>
+
+    <h3 style="margin-top:40px">The seven stages across the page</h3>
+    <ol class="seq">
+      <li><b>01 Origin</b><span>Act I opens on the hero: one seed-like form on stone, the promise and the CTA legible on first paint.</span></li>
+      <li><b>02 Awakening</b><span>T4 push-in, T1 diagonal wipe, T5 panels: the idea opens into facets. The positioning statement.</span></li>
+      <li><b>03 Foundation</b><span>T3 grain dissolve into the dark ground: research, understanding, strategy (how we work). T6 closes Act I.</span></li>
+      <li><b>04 Expansion</b><span>Act II: the five services as five connected compositions, entered by T2, moving sideways with T1.</span></li>
+      <li><b>05 Differentiation</b><span>Selected work: each project its own material and tone, T5 panels per project. T6 closes Act II.</span></li>
+      <li><b>06 Identity</b><span>A calm, confident editorial section: credibility and the proof that exists, in one composition.</span></li>
+      <li><b>07 Ecosystem</b><span>Act III: the final CTA as a field that keeps opening (T4 push-out), ending on the olive enquiry band.</span></li>
+    </ol>
+  </section>
+
+  <!-- Step 3 -->
+  <section aria-labelledby="s3">
+    <div class="head">
+      <p class="label">Step 3 · Three directions</p>
+      <h2 id="s3">Same story, same motion, three looks.</h2>
+      <p class="small muted">Tiles are generated studies of colour, material and type, not borrowed images. References are named, not reproduced.</p>
+    </div>
+
+    <div class="dir" aria-labelledby="dA">
+      <div class="dir-head">
+        <div><p class="letter">A</p><h3 id="dA" style="font-size:clamp(30px,24px+1.6vw,46px)">Gallery</h3></div>
+        <p class="lead">The brand as a body of sculpture in a quiet gallery: stone, plaster and gold on ivory, with one move into a dark strata room for the foundations. Prototyped.</p>
+      </div>
+      <div class="board">
+        <figure class="tile" style="margin:0"><canvas data-tex="stone"></canvas><figcaption>Travertine ground</figcaption></figure>
+        <figure class="tile" style="margin:0"><canvas data-tex="plaster"></canvas><figcaption>Plaster, gold leaf</figcaption></figure>
+        <figure class="tile" style="margin:0"><canvas data-tex="strata"></canvas><figcaption>Dark strata room</figcaption></figure>
+        <figure class="tile type" style="margin:0;background:var(--ivory)"><span class="sm">Display</span><span class="big">Roots before branches.</span><span class="sm">Cormorant 500 / Jost</span></figure>
+      </div>
+      <div class="notes">
+        <div class="note"><h4>Image direction</h4><p>Sculpture studio photography: casts, stone, gold leaf, hands at work, raking daylight. Renders of the Mineral form sit among them as exhibited pieces.</p></div>
+        <div class="note"><h4>3D and material</h4><p>Matte stone, satin plaster, frosted mineral, one burnished gold. 3D used for two or three hero objects only.</p></div>
+        <div class="note"><h4>Colour</h4><div class="chips"><span class="chip"><i style="background:#F6F1E8"></i>Ivory<small>Ground</small></span><span class="chip"><i style="background:#D9C9A8"></i>Travertine<small>Stone</small></span><span class="chip"><i style="background:#B08D57"></i>Gold<small>Detail</small></span><span class="chip"><i style="background:#2E1E14"></i>Espresso<small>Strata room</small></span><span class="chip"><i style="background:#9AA58A"></i>Muted sage<small>Mineral</small></span></div></div>
+        <div class="note"><h4>Typography</h4><p>Large Cormorant headlines low-left, generous negative space; Jost labels with gold numerals as stage marks.</p></div>
+        <div class="note"><h4>Motion behaviour</h4><p>Slow and weighted. Push-ins dominate; wipes are clean diagonals; one grain dissolve into the dark room per act.</p></div>
+        <div class="note"><h4>Example transitions</h4><p>Origin → Awakening: seed pushes in, Awakening cuts in on a diagonal. Awakening → Foundation: grain dissolve into strata. Foundation → Expansion: plate contraction.</p></div>
+      </div>
+    </div>
+
+    <div class="dir" aria-labelledby="dB">
+      <div class="dir-head">
+        <div><p class="letter">B</p><h3 id="dB" style="font-size:clamp(30px,24px+1.6vw,46px)">Archive</h3></div>
+        <p class="lead">The brand as a living archive: specimen plates, engravings, pressed forms and macro photography, catalogued and numbered, then let loose at full bleed.</p>
+      </div>
+      <div class="board">
+        <figure class="tile" style="margin:0"><canvas data-tex="paper"></canvas><figcaption>Archive paper</figcaption></figure>
+        <figure class="tile" style="margin:0"><canvas data-tex="etch"></canvas><figcaption>Engraved line</figcaption></figure>
+        <figure class="tile" style="margin:0"><canvas data-tex="sage"></canvas><figcaption>Pressed specimen</figcaption></figure>
+        <figure class="tile type" style="margin:0;background:var(--travertine)"><span class="sm">Plate 03 · Foundation</span><span class="big">No. 03</span><span class="sm">Catalogue numbering</span></figure>
+      </div>
+      <div class="notes">
+        <div class="note"><h4>Image direction</h4><p>Engraving-style illustration that pushes into colour photography (as the reference does), specimen drawers, macro organic detail, paper and ink.</p></div>
+        <div class="note"><h4>3D and material</h4><p>Very little 3D: thin translucent forms laid on plates like specimens. Paper grain, ink, glass slides.</p></div>
+        <div class="note"><h4>Colour</h4><div class="chips"><span class="chip"><i style="background:#F6F1E8"></i>Ivory<small>Paper</small></span><span class="chip"><i style="background:#4B5236"></i>Olive<small>Ink</small></span><span class="chip"><i style="background:#9AA58A"></i>Muted sage<small>Specimens</small></span><span class="chip"><i style="background:#B07A62"></i>Muted clay<small>Labels</small></span><span class="chip"><i style="background:#B08D57"></i>Gold<small>Numerals</small></span></div></div>
+        <div class="note"><h4>Typography</h4><p>Catalogue logic: plate numbers, small caps captions, serif titles set like specimen labels.</p></div>
+        <div class="note"><h4>Motion behaviour</h4><p>Plates fly from an ordered grid into full bleed; page-turn diagonals; engravings dissolve into photographs through grain.</p></div>
+        <div class="note"><h4>Example transitions</h4><p>Origin → Awakening: an engraved seed plate pushes in and dissolves into a colour macro. Expansion: five plates on a grid, each expanding in turn.</p></div>
+      </div>
+    </div>
+
+    <div class="dir" aria-labelledby="dC">
+      <div class="dir-head">
+        <div><p class="letter">C</p><h3 id="dC" style="font-size:clamp(30px,24px+1.6vw,46px)">Nocturne</h3></div>
+        <p class="lead">The brand in raking light: dark espresso chapters with lit material close-ups and gold veins, alternating with ivory pauses. The most cinematic and the most dramatic.</p>
+      </div>
+      <div class="board">
+        <figure class="tile" style="margin:0"><canvas data-tex="night"></canvas><figcaption>Raking light</figcaption></figure>
+        <figure class="tile" style="margin:0"><canvas data-tex="vein"></canvas><figcaption>Gold vein</figcaption></figure>
+        <figure class="tile" style="margin:0"><canvas data-tex="stone"></canvas><figcaption>Ivory pause</figcaption></figure>
+        <figure class="tile type" style="margin:0;background:var(--espresso);color:var(--ivory)"><span class="sm" style="color:var(--travertine)">Act II</span><span class="big">It grows in every direction.</span><span class="sm" style="color:var(--travertine)">Ivory on espresso</span></figure>
+      </div>
+      <div class="notes">
+        <div class="note"><h4>Image direction</h4><p>Low-key photography of materials (stone, bronze, leaves, hands) lit from one side; the Mineral form with its gold veins as the recurring object.</p></div>
+        <div class="note"><h4>3D and material</h4><p>Translucent mineral, bronze, satin; light passing through thin edges. More 3D than A or B, still not one central object.</p></div>
+        <div class="note"><h4>Colour</h4><div class="chips"><span class="chip"><i style="background:#2E1E14"></i>Espresso<small>Dark chapters</small></span><span class="chip"><i style="background:#F6F1E8"></i>Ivory<small>Pauses, type</small></span><span class="chip"><i style="background:#B08D57"></i>Gold<small>Veins, light</small></span><span class="chip"><i style="background:#2F3A2A"></i>Deep forest<small>Shadow</small></span><span class="chip"><i style="background:#8C6A43"></i>Muted bronze<small>Metal</small></span></div></div>
+        <div class="note"><h4>Typography</h4><p>Ivory Cormorant on espresso, larger and sparser; labels in Travertine.</p></div>
+        <div class="note"><h4>Motion behaviour</h4><p>Light-slit diagonal reveals (a narrow lit band widening across the dark), slow pans, grain dissolves back to ivory between acts.</p></div>
+        <div class="note"><h4>Example transitions</h4><p>Origin: a slit of light opens on the seed. Foundation: the dark deepens through grain. Identity: a full ivory cut, the most confident moment.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 4 -->
+  <section aria-labelledby="s4">
+    <div class="proto">
+      <p class="label">Step 4 · Working prototype</p>
+      <h2 id="s4">Origin, Awakening, Foundation, in Direction A.</h2>
+      <p>It tests the opening composition, the push-in match cut, the diagonal wipe, layered slanted panels, the grain dissolve into a dark scene, masked headline reveals and the plate hand-off. The transitions are the same in all three directions; only imagery and colour change. Images are placeholders from the Mineral sculpture and generated stone, labelled as such.</p>
+      <div class="cta-row"><a class="btn primary" href="prototype.html">Open the prototype</a><span class="small" style="color:var(--travertine)">Best on a laptop first, then a phone.</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s5">
+    <div class="head"><p class="label">Decisions before Step 5</p><h2 id="s5">What I need from you.</h2></div>
+    <ul class="list">
+      <li><b>Direction:</b> A Gallery (recommended: closest to the current identity and the approved Mineral work), B Archive, C Nocturne, or a mix.</li>
+      <li><b>Imagery source:</b> this style lives or dies on its pictures. AI-generated images, licensed stock, a commissioned shoot, your own photographs, or mainly 3D renders and textures. The prototype's placeholders will be replaced either way.</li>
+      <li><b>GSAP and ScrollTrigger:</b> recommended for the full build (about 70 KB compressed, free to use). No Lenis: native scrolling stays, which keeps keyboard, anchors and accessibility intact.</li>
+      <li><b>Page order:</b> to fit the seven stages, process moves before services (Foundation before Expansion). Copy stays as approved.</li>
+      <li><b>The current Mineral story:</b> it becomes one supporting element in Act I and Act III instead of a long pinned sequence.</li>
+    </ul>
+  </section>
+
+  <footer><p class="small muted">Prepared from nine reference frames and the current CALIX code. Nothing on the live site has changed.</p></footer>
+</div>
+
+<script>
+(() => {
+  // Generated texture studies for the moodboards (no borrowed images).
+  let s = 5; const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  const P = new Uint8Array(512); { const p = [...Array(256).keys()]; for (let i = 255; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; } for (let i = 0; i < 512; i++) P[i] = p[i & 255]; }
+  const f = (t) => t * t * (3 - 2 * t);
+  const n = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), u = f(x - xi), v = f(y - yi), h = (a, b) => P[(P[a & 255] + b) & 255] / 255; const a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+  const fbm = (x, y, o = 4) => { let t = 0, a = 0.5; for (let i = 0; i < o; i++) { t += a * n(x, y); x *= 2.03; y *= 2.03; a *= 0.5; } return t; };
+  const mix = (A, B, k) => A.map((v, i) => v + (B[i] - v) * Math.min(1, Math.max(0, k)));
+  const IV = [246, 241, 232], TR = [217, 201, 168], GO = [176, 141, 87], ES = [46, 30, 20], OL = [75, 82, 54], SA = [154, 165, 138], FO = [47, 58, 42];
+  const recipes = {
+    stone: (x, y) => { let c = mix(TR, IV, fbm(x * 0.008, y * 0.05) * 1.3 - 0.15); const p = n(x * 0.3, y * 0.8); return p > 0.85 ? mix(c, GO, (p - 0.85) * 3) : c; },
+    plaster: (x, y) => { let c = mix(IV, TR, fbm(x * 0.02, y * 0.02) * 0.6); const g = fbm(x * 0.012 + 3, y * 0.012); return g > 0.62 ? mix(c, GO, (g - 0.62) * 4) : c; },
+    strata: (x, y) => mix(ES, OL, fbm(x * 0.005 + fbm(x * 0.004, y * 0.02) * 2, y * 0.03) * 1.5 - 0.3),
+    paper: (x, y) => mix(IV, TR, fbm(x * 0.04, y * 0.04, 3) * 0.45 + n(x * 0.8, y * 0.8) * 0.1),
+    etch: (x, y) => { const line = Math.abs(Math.sin((y + fbm(x * 0.01, y * 0.01) * 60) * 0.35)); return line < 0.18 ? OL : IV; },
+    sage: (x, y) => { const v = fbm(x * 0.01, y * 0.01); const leaf = Math.hypot((x - 120) / 70, (y - 150) / 115) + (v - 0.5) * 0.4; return leaf < 1 ? mix(SA, OL, v * 0.8) : mix(IV, TR, v * 0.4); },
+    night: (x, y) => { const light = Math.max(0, 1 - Math.abs((x * 0.7 + y * 0.3) - 140) / 90); return mix(ES, mix(TR, GO, 0.4), light * light * 0.9 * (0.6 + fbm(x * 0.02, y * 0.02) * 0.6)); },
+    vein: (x, y) => { const v = Math.abs(n(x * 0.025, y * 0.025) - 0.5); const base = mix(FO, SA, fbm(x * 0.01, y * 0.01) * 0.6); return v < 0.03 ? mix(base, GO, 1 - v / 0.03) : base; },
+  };
+  document.querySelectorAll("canvas[data-tex]").forEach((cv) => {
+    const W = 240, H = 300; cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d"); const img = ctx.createImageData(W, H); const fn = recipes[cv.dataset.tex];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const c = fn(x, y); const i = (y * W + x) * 4; img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255; }
+    ctx.putImageData(img, 0, 0);
+  });
+})();
+</script>

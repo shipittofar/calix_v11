@@ -1,0 +1,359 @@
+import Image from "next/image";
+import Link from "next/link";
+import { getPublicSettings } from "@/lib/settings/public";
+import { primaryCta } from "@/content/site";
+import { services } from "@/content/services";
+import { collaboration, processSteps } from "@/content/process";
+import { featuredProjects, workGateMet } from "@/content/work";
+import { ContentPlaceholder, Fact } from "@/components/ui/Pending";
+import { WorkGapNotice } from "@/components/work/WorkGapNotice";
+import { ProjectList } from "@/components/work/ProjectList";
+import { stages } from "@/components/home/story/stages";
+
+/**
+ * The cinematic home page, direction C "Nocturne" (docs/cinematic-direction.md): the seven stages of
+ * a brand's evolution spread across the page in dark chapters and ivory pauses.
+ *
+ * Every scene is complete, readable HTML. Without motion (reduced motion, short screens, no
+ * JavaScript, or STORY_PREVIEW=false) each scene is a full-height still in normal flow. With motion,
+ * html[data-cinema="on"] and the story marker switch Act I to stacked layers and StoryPlayer drives
+ * the transitions with GSAP ScrollTrigger. Images are placeholders (Mineral renders and generated
+ * textures in public/cinema) until approved photography replaces them, file for file.
+ */
+
+const stage = (id: string) => stages.find((s) => s.id === id)!;
+
+function Mark({ n, label }: { n: string; label: string }) {
+  return (
+    <p className="cine-mark">
+      <span className="cine-mark__n" aria-hidden="true">
+        {n}
+      </span>
+      <span className="cine-mark__label">{label}</span>
+    </p>
+  );
+}
+
+/** Act I: Origin (the hero), Awakening and Foundation, pinned together when motion is on. */
+export async function ActOne() {
+  const { replyTime } = await getPublicSettings();
+  const awakening = stage("awakening");
+  const foundation = stage("foundation");
+  return (
+    <div className="cine-act" data-act="one">
+      {/* 01 Origin */}
+      <section className="cine-layer cine-origin cine-dark surface-inverse" data-scene="origin" aria-labelledby="hero-title">
+        <div className="cine-origin__media" data-media>
+          <Image
+            src="/cinema/origin-seed.webp"
+            alt=""
+            width={1920}
+            height={1200}
+            priority
+            sizes="100vw"
+            className="cine-cover"
+          />
+        </div>
+        <div className="container-calix cine-origin__copy" data-copy>
+          <Mark n="01" label="Origin" />
+          <h1 id="hero-title" className="type-display cine-origin__title">
+            Make Your Brand Impossible to Ignore.
+          </h1>
+          <p className="type-lead measure cine-origin__lead">
+            Strategy, design, technology and marketing — connected to build stronger brands and better digital
+            outcomes.
+          </p>
+          <div className="cine-origin__actions">
+            <Link href={primaryCta.href} className="btn btn-primary cine-btn-light" data-cta="hero">
+              {primaryCta.label}
+            </Link>
+            <a href="#work" className="btn btn-secondary">
+              Explore Our Work
+            </a>
+          </div>
+          <Fact value={replyTime} render={(v) => <p className="type-small cine-origin__note">We reply within {v}.</p>} />
+          <p className="type-small cine-origin__skip">
+            <a href="#services" className="link">
+              Skip to our services
+            </a>
+          </p>
+        </div>
+      </section>
+
+      {/* 02 Awakening */}
+      <section className="cine-layer cine-awake" data-scene="awakening" aria-labelledby="awakening-title">
+        <div className="cine-panels" aria-hidden="true">
+          <div className="cine-panel cine-panel--a" data-panel="a">
+            <Image src="/cinema/awakening-rings.webp" alt="" width={1000} height={1300} sizes="(min-width: 761px) 40vw, 90vw" className="cine-cover" />
+          </div>
+          <div className="cine-panel cine-panel--b" data-panel="b">
+            <Image src="/cinema/awakening-veins.webp" alt="" width={1000} height={1300} sizes="(min-width: 761px) 60vw, 90vw" className="cine-cover" />
+          </div>
+          <div className="cine-panel cine-panel--c" data-panel="c">
+            <Image src="/cinema/awakening-blades.webp" alt="" width={1000} height={1300} sizes="(min-width: 761px) 30vw, 50vw" className="cine-cover" />
+          </div>
+        </div>
+        <div className="container-calix cine-awake__copy" data-copy>
+          <Mark n="02" label={awakening.label} />
+          <h2 id="awakening-title" className="cine-title" data-words>
+            {awakening.title}
+          </h2>
+          <p className="measure">
+            {awakening.body} Most brands are built in pieces: a logo from one studio, a website from another, campaigns and
+            search from someone else. We plan them as one line of thought.
+          </p>
+        </div>
+      </section>
+
+      {/* 03 Foundation */}
+      <section className="cine-layer cine-found cine-dark surface-inverse" data-scene="foundation" aria-labelledby="foundation-title">
+        <div className="cine-found__media" data-media data-grain>
+          <Image src="/cinema/foundation-strata.webp" alt="" width={1920} height={1200} sizes="100vw" className="cine-cover" loading="eager" />
+        </div>
+        <div className="container-calix cine-found__copy" data-copy>
+          <Mark n="03" label={foundation.label} />
+          <h2 id="foundation-title" className="cine-title">
+            {foundation.title}
+          </h2>
+          <p className="measure cine-found__lead">{foundation.body}</p>
+          <ol className="cine-steps">
+            {processSteps.map((step, i) => (
+              <li key={step.title} className="cine-step" data-step>
+                <span className="cine-step__n" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3 className="cine-step__title">{step.title}</h3>
+                <p className="type-small">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** An ivory pause after Act I: how the work is run. */
+export function HowWeWork() {
+  return (
+    <section id="process" aria-labelledby="process-title" className="cine-pause section-pad">
+      <div className="container-calix grid-calix gap-y-10">
+        <h2 id="process-title" className="col-span-4 md:col-span-8 lg:col-span-4" data-reveal>
+          How we work together
+        </h2>
+        <ul className="col-span-4 grid gap-8 md:col-span-8 md:grid-cols-3 lg:col-span-8">
+          {collaboration.map((item) => (
+            <li key={item.title} className="cine-pause__item" data-reveal>
+              <p className="font-medium">{item.title}</p>
+              <p className="type-small mt-2 text-secondary">{item.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/** Act II opening: a blade sweeps across the ivory pause and leaves the dark Expansion chapter behind it. */
+export function ExpansionIntro() {
+  const expansion = stage("expansion");
+  return (
+    <section id="services" className="cine-wipe" data-act="wipe" aria-labelledby="services-title">
+      <div className="cine-wipe__dark cine-dark surface-inverse" data-wipe-dark>
+        <div className="container-calix cine-wipe__copy">
+          <Mark n="04" label={expansion.label} />
+          <h2 id="services-title" className="cine-title">
+            {expansion.title}
+          </h2>
+          <p className="measure">
+            {expansion.body.replace(/:$/, ".")} Five services, planned together.
+          </p>
+          <ul className="cine-index">
+            {services.map((s, i) => (
+              <li key={s.key}>
+                <a href={`#${s.anchor}`}>
+                  <span className="cine-index__n" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="cine-index__name">{s.name}</span>
+                  <span className="cine-index__desc type-small">{s.descriptor}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="cine-wipe__blade" data-wipe-blade aria-hidden="true">
+        <Image src="/cinema/expansion-blade.webp" alt="" width={1600} height={1800} sizes="70vw" className="cine-contain" />
+      </div>
+    </section>
+  );
+}
+
+const serviceImages: Record<string, string> = {
+  brand: "/cinema/service-brand.webp",
+  web: "/cinema/service-web.webp",
+  marketing: "/cinema/service-marketing.webp",
+  seo: "/cinema/service-seo.webp",
+  growth: "/cinema/service-growth.webp",
+};
+
+/** Act II: the five services, each its own composition, alternating sides. */
+export function Services() {
+  return (
+    <div className="cine-services cine-dark surface-inverse">
+      {services.map((s, i) => (
+        <section key={s.key} id={s.anchor} className="cine-service" data-service aria-labelledby={`${s.anchor}-title`}>
+          <div className="container-calix cine-service__grid">
+            <div className={`cine-service__media ${i % 2 ? "is-right" : ""}`} data-reveal-media>
+              <Image src={serviceImages[s.key]} alt="" width={1200} height={1500} sizes="(min-width: 1200px) 40vw, (min-width: 768px) 50vw, 100vw" className="cine-cover" />
+            </div>
+            <div className={`cine-service__copy ${i % 2 ? "is-left" : ""}`}>
+              <p className="cine-mark">
+                <span className="cine-mark__n" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="cine-mark__label">{s.name}</span>
+              </p>
+              <h3 id={`${s.anchor}-title`} className="cine-service__title" data-lines>
+                {s.heading}
+              </h3>
+              <p className="measure">{s.body}</p>
+              <ul className="cine-service__list type-small">
+                {s.included.map((item) => (
+                  <li key={item} data-reveal>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="cine-service__links">
+                <Link href={s.cta.href} className="link font-medium">
+                  {s.cta.label}
+                </Link>
+                <Link href={`/services/${s.slug}`} className="link">
+                  See {s.name}
+                </Link>
+              </p>
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/** 05 Differentiation: selected work. Only approved projects are ever shown. */
+export function Differentiation() {
+  const differentiation = stage("differentiation");
+  return (
+    <section id="work" className="cine-diff cine-dark surface-inverse" aria-labelledby="work-title">
+      <div className="cine-diff__panels" aria-hidden="true">
+        {["a", "b", "c"].map((k) => (
+          <div key={k} className={`cine-diff__panel cine-diff__panel--${k}`} data-diff-panel>
+            <Image src="/cinema/differentiation.webp" alt="" width={1920} height={1100} sizes="(min-width: 768px) 34vw, 100vw" className="cine-cover" />
+          </div>
+        ))}
+      </div>
+      <p className="cine-diff__caption type-small">Illustration of the idea, not client work.</p>
+      <div className="container-calix grid-calix cine-diff__body">
+        <div className="col-span-4 md:col-span-8 lg:col-span-5">
+          <Mark n="05" label={differentiation.label} />
+          <h2 id="work-title" className="cine-title" data-lines>
+            Selected work
+          </h2>
+          <p className="mt-6 measure">
+            {differentiation.title} Client projects shown here are published only with the client&apos;s approval, with
+            the facts they have confirmed.
+          </p>
+        </div>
+        <div className="col-span-4 mt-12 md:col-span-8 lg:col-span-7 lg:col-start-6 lg:mt-0">
+          {workGateMet && featuredProjects.length > 0 ? (
+            <>
+              <ProjectList projects={featuredProjects} />
+              <p className="mt-8">
+                <Link href="/work" className="link font-medium">
+                  See all work
+                </Link>
+              </p>
+            </>
+          ) : (
+            <ContentPlaceholder
+              title="Featured client projects"
+              publicFallback={<WorkGapNotice />}
+              needed={[
+                "Two to three approved projects (publication level P1 or P2)",
+                "Desktop and mobile screenshots, identity files or campaign assets for each",
+                "Services delivered, year, and the project objective",
+                "Written publication approval reference for each client",
+              ]}
+            >
+              No client work is shown until approved projects are supplied.
+            </ContentPlaceholder>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** 06 Identity: the full ivory cut, the calmest and most confident moment. Credibility rules. */
+export function Identity() {
+  const identity = stage("identity");
+  return (
+    <section id="credibility" className="cine-identity" aria-labelledby="credibility-title">
+      <div className="cine-identity__band">
+        <div className="cine-identity__media" data-push>
+          <Image src="/cinema/identity-crown.webp" alt="" width={1600} height={1600} sizes="(min-width: 768px) 50vw, 100vw" className="cine-cover" />
+        </div>
+        <canvas className="cine-grain-cover" data-grain-cover aria-hidden="true" />
+        <div className="container-calix cine-identity__intro">
+          <Mark n="06" label={identity.label} />
+          <p className="cine-identity__statement" data-lines>
+            {identity.title}
+          </p>
+          <p className="measure">{identity.body}</p>
+        </div>
+      </div>
+      <div className="container-calix grid-calix gap-y-12 section-pad">
+        <div className="col-span-4 md:col-span-8 lg:col-span-5">
+          <h2 id="credibility-title">Proof, with its sources.</h2>
+          <p className="mt-6 measure">We would rather show less than claim more. Every result we publish meets three rules:</p>
+          <ul className="rule-list mt-8 type-small">
+            <li className="py-3">Published only with the client&apos;s written approval.</li>
+            <li className="py-3">Stated with a baseline, a time period and a data source.</li>
+            <li className="py-3">Concept work is always labelled as concept, never as client work.</li>
+          </ul>
+        </div>
+        <div className="col-span-4 grid gap-8 md:col-span-8 lg:col-span-6 lg:col-start-7">
+          <ContentPlaceholder
+            title="Verified client outcomes"
+            needed={["Approved outcome figures with baseline, time period and source", "Client approval to publish each figure"]}
+          />
+          <ContentPlaceholder
+            title="Client testimonial"
+            needed={["A client quote in the client's exact words", "Name, role and company as approved", "Written permission to publish"]}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** 07 Ecosystem: the field opens out before the enquiry band (FinalCta, unchanged and never animated). */
+export function Ecosystem() {
+  const ecosystem = stage("ecosystem");
+  return (
+    <section className="cine-eco cine-dark surface-inverse" aria-labelledby="ecosystem-title">
+      <div className="cine-eco__media" data-push-out>
+        <Image src="/cinema/ecosystem.webp" alt="" width={1920} height={1200} sizes="100vw" className="cine-cover" />
+      </div>
+      <div className="container-calix cine-eco__copy">
+        <Mark n="07" label={ecosystem.label} />
+        <h2 id="ecosystem-title" className="cine-title" data-lines>
+          {ecosystem.title}
+        </h2>
+        <p className="measure">{ecosystem.body}</p>
+      </div>
+    </section>
+  );
+}

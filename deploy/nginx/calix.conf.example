@@ -1,0 +1,33 @@
+# Example Nginx site for the CALIX website. Adapt names and certificate paths; keep the include.
+# See docs/admin-panel-runbook.md §3. Test with `nginx -t` before reloading.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.calixeden.com calixeden.com;
+    return 301 https://www.calixeden.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name calixeden.com;
+    ssl_certificate     /etc/letsencrypt/live/www.calixeden.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/www.calixeden.com/privkey.pem;
+    return 301 https://www.calixeden.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name www.calixeden.com;
+
+    ssl_certificate     /etc/letsencrypt/live/www.calixeden.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/www.calixeden.com/privkey.pem;
+
+    # Optional: restrict /admin to known addresses; see docs/admin-panel-runbook.md §3.
+
+    include /etc/nginx/snippets/calix-proxy.conf;
+}

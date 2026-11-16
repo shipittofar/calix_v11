@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CALIX Surreal Direction</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
+<style>
+  /* Layout: editorial column; the chosen concept first with its 16:9 storyboard, alternatives after, decisions last. */
+  :root {
+    --espresso: #2E1E14; --ivory: #F6F1E8; --travertine: #D9C9A8; --gold: #B08D57; --olive: #4B5236;
+    --font-display: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+    --font-text: Jost, Futura, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ivory); color: var(--espresso); font-family: var(--font-text); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+  @media (min-width: 900px) { .wrap { padding-left: max(48px, env(safe-area-inset-left, 0px)); padding-right: max(48px, env(safe-area-inset-right, 0px)); } }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(42px, 28px + 4vw, 90px); line-height: 1.02; letter-spacing: -0.015em; }
+  h2 { font-size: clamp(32px, 24px + 2.2vw, 56px); line-height: 1.06; }
+  h3 { font-size: clamp(23px, 20px + 0.6vw, 30px); line-height: 1.15; }
+  p { margin: 0; }
+  .label { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--olive); }
+  .lead { font-size: clamp(18px, 17px + 0.3vw, 21px); line-height: 1.55; max-width: 42rem; }
+  .small { font-size: 15px; } .muted { color: var(--olive); }
+  .masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 28px 18px; border-bottom: 1px solid var(--travertine); }
+  .wordmark { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.22em; font-weight: 600; }
+  .intro { display: grid; gap: 24px; padding-block: 72px 56px; }
+  section { padding-block: 64px; border-top: 1px solid var(--travertine); }
+  .head { display: grid; gap: 14px; margin-bottom: 32px; max-width: 52rem; }
+  .two { display: grid; gap: 40px; } @media (min-width: 900px) { .two { grid-template-columns: 1fr 1fr; gap: 56px; } }
+  .list { margin: 12px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--espresso); }
+  .list li { padding: 12px 0; border-bottom: 1px solid var(--travertine); font-size: 16px; }
+  .list b { font-weight: 500; }
+  .rules { display: grid; gap: 0; border-top: 1px solid var(--espresso); }
+  @media (min-width: 760px) { .rules { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 32px; } }
+  .rule { padding: 16px 0 18px; border-bottom: 1px solid var(--travertine); min-width: 0; }
+  .rule h4 { margin: 0 0 6px; font: 500 12px/1.3 var(--font-text); letter-spacing: 0.16em; text-transform: uppercase; color: var(--olive); }
+  .rule p { font-size: 15.5px; line-height: 1.55; }
+
+  .board { display: grid; gap: 40px; }
+  .shot { display: grid; gap: 16px; }
+  @media (min-width: 900px) { .shot { grid-template-columns: 7fr 5fr; column-gap: 40px; align-items: start; } }
+  .frame { position: relative; aspect-ratio: 16 / 9; max-width: 100%; background: var(--espresso); border: 1px solid var(--espresso); overflow: hidden; }
+  .frame svg { display: block; width: 100%; height: 100%; }
+  .frame .tc { position: absolute; left: 10px; top: 8px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--travertine); }
+  .frame.light .tc { color: var(--espresso); }
+  .notes { display: grid; gap: 10px; min-width: 0; }
+  .notes .stage { display: flex; gap: 12px; align-items: baseline; }
+  .notes .stage .n { font-family: var(--font-display); font-size: 34px; color: var(--gold); line-height: 1; }
+  .notes .stage .name { font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; }
+  .notes dl { margin: 0; display: grid; grid-template-columns: 7rem 1fr; gap: 6px 12px; font-size: 15px; line-height: 1.5; border-top: 1px solid var(--travertine); padding-top: 10px; }
+  .notes dt { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); padding-top: 3px; }
+  .notes dd { margin: 0; }
+  .cut { font-size: 14px; color: var(--olive); border-left: 2px solid var(--gold); padding-left: 10px; }
+
+  .palette { display: flex; flex-wrap: wrap; margin-top: 12px; border: 1px solid var(--espresso); max-width: 640px; }
+  .palette span { flex: 1 1 0; min-width: 72px; height: 64px; display: flex; align-items: flex-end; padding: 6px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .alts { display: grid; gap: 0; border-top: 1px solid var(--espresso); }
+  .alt { display: grid; gap: 6px; padding: 16px 0; border-bottom: 1px solid var(--travertine); }
+  @media (min-width: 900px) { .alt { grid-template-columns: 14rem 1fr; column-gap: 32px; } }
+  .alt h3 { font-size: 24px; }
+
+  .ask { display: grid; gap: 14px; padding: 32px; background: var(--espresso); color: var(--ivory); }
+  .ask .label { color: var(--travertine); }
+  .ask ul { margin: 0; padding-left: 1.1em; }
+  .ask li { margin: 6px 0; }
+  footer { padding-block: 40px 72px; border-top: 1px solid var(--travertine); }
+</style>
+
+<div class="wrap">
+  <header class="masthead"><span class="wordmark">CALIX</span><span class="label">Visual direction · awaiting approval</span></header>
+
+  <div class="intro">
+    <p class="label">Real objects in surreal scenes · 14 November 2026</p>
+    <h1>The Seed.</h1>
+    <p class="lead">One real seed, treated like the most precious object in the world. It is studied, measured, set into a foundation, cast in gold, turned into a mark, and carried into every place a brand lives. It never sprouts. Like the pear in your reference, it is the single object the visitor follows from the first frame to the last.</p>
+  </div>
+
+  <!-- Analysis -->
+  <section aria-labelledby="a1">
+    <div class="head"><p class="label">1 · Analysis</p><h2 id="a1">What the two references tell us.</h2></div>
+    <div class="two">
+      <div>
+        <h3>The current site</h3>
+        <ul class="list">
+          <li><b>Keep:</b> Cormorant and Jost, the five colours, the Ivory ground, the outline header button, calm short copy, and the scroll engine already built (pinned acts, wipes, push-ins, masked headlines, static fallbacks).</li>
+          <li><b>What failed:</b> abstract forms (a drawing, a stone, a sculpture) that carried no nameable meaning, and contrast that was too even.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The reference imagery</h3>
+        <ul class="list">
+          <li><b>Real, nameable objects:</b> a pear, a drape, scaffolding, a knife, a mosaic, a classical figure.</li>
+          <li><b>Surreal by scale and context</b>, with art-historical treatments and strong light against dark.</li>
+          <li><b>One object carries the story.</b> The pear grows, is grafted, gilded, monumentalised and set in mosaic. We borrow that structure, not the pear or the scaffold.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The concept -->
+  <section aria-labelledby="a2">
+    <div class="head">
+      <p class="label">2 · The concept</p>
+      <h2 id="a2">An idea, handled like a treasure.</h2>
+      <p class="small muted">The seed is the idea. Everything that happens to it is something a brand studio does: examine, structure, refine, mark, systematise, apply, connect. That is how the story stays about building a brand, not about nature.</p>
+    </div>
+    <div class="rules">
+      <div class="rule"><h4>The object</h4><p>An acorn: unmistakably a seed, with a strong silhouette that can become a mark, and no olive association. Alternatives: a peach stone (sculptural, grooved) or an almond (elegant, but close to an olive pit).</p></div>
+      <div class="rule"><h4>The rule</h4><p>The seed never sprouts, roots or grows into a tree. It is examined, cast, set, printed and carried, like a museum piece or a precious material.</p></div>
+      <div class="rule"><h4>The look</h4><p>Medium-format photography and photomontage; one high window of light; espresso and olive shadows; ivory and travertine surfaces; antique gold on the seed and the mark only.</p></div>
+    </div>
+    <div class="palette" aria-label="Contrast plan">
+      <span style="background:#2E1E14;color:#F6F1E8">Espresso · shadow</span>
+      <span style="background:#4B5236;color:#F6F1E8">Olive · depth</span>
+      <span style="background:#D9C9A8;color:#2E1E14">Travertine · surfaces</span>
+      <span style="background:#F6F1E8;color:#2E1E14">Ivory · light</span>
+      <span style="background:#B08D57;color:#2E1E14">Gold · the seed</span>
+    </div>
+  </section>
+
+  <!-- Storyboard -->
+  <section aria-labelledby="a3">
+    <div class="head">
+      <p class="label">3 · Storyboard</p>
+      <h2 id="a3">Ten shots, one seed.</h2>
+      <p class="small muted">Composition sketches, not final images. Each shot names its real objects, the surreal turn, the light, the camera, where the words sit, and how it becomes the next shot. The label on each frame is the part of the home page it carries.</p>
+    </div>
+
+    <div class="board">
+
+      <div class="shot">
+        <div class="frame"><span class="tc">01 · Hero</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#2E1E14"/>
+            <polygon points="0,180 320,180 236,118 118,118" fill="#4B5236" opacity=".55"/>
+            <polygon points="196,0 222,0 244,180 172,180" fill="#D9C9A8" opacity=".2"/>
+            <rect x="192" y="100" width="44" height="40" fill="#D9C9A8"/><rect x="188" y="96" width="52" height="6" fill="#F6F1E8"/>
+            <ellipse cx="214" cy="84" rx="9" ry="12" fill="#B08D57"/><path d="M204 76 Q 214 66, 224 76 Z" fill="#4B5236"/>
+            <rect x="18" y="66" width="82" height="7" fill="#F6F1E8"/><rect x="18" y="78" width="64" height="7" fill="#F6F1E8"/><rect x="18" y="92" width="70" height="3" fill="#D9C9A8"/><rect x="18" y="104" width="34" height="9" fill="#F6F1E8"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">01</span><span class="name">Origin</span></p>
+          <dl>
+            <dt>Scene</dt><dd>A single acorn rests on a travertine plinth in the middle of a vast, dark museum hall, displayed like the collection's most valuable piece.</dd>
+            <dt>Surreal turn</dt><dd>The smallest, most ordinary object given the space and reverence of a masterpiece.</dd>
+            <dt>Light</dt><dd>One shaft from a high window; the seed glows warm gold, the hall falls into espresso and olive.</dd>
+            <dt>Camera</dt><dd>Wide and still; slow push-in as the visitor scrolls.</dd>
+            <dt>Words</dt><dd>Hero headline and buttons in the dark left third.</dd>
+          </dl>
+          <p class="cut">Into 02: the push-in continues until the seed fills the frame.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame"><span class="tc">02</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#2E1E14"/>
+            <ellipse cx="190" cy="104" rx="66" ry="78" fill="#B08D57"/><path d="M128 60 Q 190 0, 252 60 Z" fill="#4B5236"/>
+            <path d="M190 40 L 184 80 L 196 110 L 186 150 L 192 182" fill="none" stroke="#F6F1E8" stroke-width="3"/>
+            <polygon points="186,182 196,182 320,170 320,180 60,180" fill="#F6F1E8" opacity=".25"/>
+            <rect x="18" y="22" width="76" height="6" fill="#F6F1E8"/><rect x="18" y="33" width="58" height="6" fill="#F6F1E8"/><rect x="18" y="46" width="66" height="3" fill="#D9C9A8"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">02</span><span class="name">Awakening</span></p>
+          <dl>
+            <dt>Scene</dt><dd>Macro: a hairline crack opens down the polished shell, and warm light spills out of it across the dark floor. No sprout, only light.</dd>
+            <dt>Surreal turn</dt><dd>The seed holds light, not a plant: the idea is alive.</dd>
+            <dt>Light</dt><dd>The crack is the only light source; the gold shell rim-lit against black.</dd>
+            <dt>Camera</dt><dd>Extreme close-up, a slow slide along the crack.</dd>
+            <dt>Words</dt><dd>Top left: "The idea starts to move."</dd>
+          </dl>
+          <p class="cut">Into 03: the light from the crack widens into a diagonal wipe that opens onto a bright studio.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame light"><span class="tc">03</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#D9C9A8"/>
+            <rect x="40" y="24" width="120" height="86" fill="#F6F1E8" opacity=".85"/>
+            <ellipse cx="100" cy="70" rx="22" ry="28" fill="none" stroke="#2E1E14" stroke-width="1"/><ellipse cx="100" cy="70" rx="16" ry="22" fill="none" stroke="#2E1E14" stroke-width=".6" stroke-dasharray="2 2"/>
+            <ellipse cx="210" cy="96" rx="28" ry="36" fill="#B08D57"/><path d="M182 74 Q 210 48, 238 74 Z" fill="#4B5236"/>
+            <path d="M246 60 L 290 30 M246 132 L 290 160" stroke="#2E1E14" stroke-width="3"/><circle cx="290" cy="30" r="4" fill="#2E1E14"/><circle cx="290" cy="160" r="4" fill="#2E1E14"/>
+            <circle cx="140" cy="140" r="20" fill="none" stroke="#2E1E14" stroke-width="5"/><line x1="154" y1="154" x2="176" y2="176" stroke="#2E1E14" stroke-width="6"/>
+            <rect x="24" y="130" width="12" height="40" fill="#4B5236"/><rect x="40" y="130" width="12" height="40" fill="#2E1E14"/><rect x="56" y="130" width="12" height="40" fill="#B08D57"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">03</span><span class="name">Discovery</span></p>
+          <dl>
+            <dt>Scene</dt><dd>From above: the seed, now the size of a boulder, lies on a vast drafting table. Real tools at its scale study it: brass calipers measuring its width, a magnifying glass, tracing paper with pencil studies of its silhouette, colour chips.</dd>
+            <dt>Surreal turn</dt><dd>A design studio examining one seed as if it held every possible answer.</dd>
+            <dt>Light</dt><dd>Bright north light; travertine table, dark tools, gold seed: strong contrast.</dd>
+            <dt>Camera</dt><dd>Overhead, a slow pan across the tools.</dd>
+            <dt>Words</dt><dd>On the tracing paper: the positioning line.</dd>
+          </dl>
+          <p class="cut">Into 04: the tracing paper slides across the frame (object-led wipe), revealing blueprints underneath.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame light"><span class="tc">04 · How we work</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#F6F1E8"/>
+            <rect x="0" y="146" width="320" height="34" fill="#D9C9A8"/>
+            <path d="M100 146 L 100 70 Q 160 10, 220 70 L 220 146 L 196 146 L 196 76 Q 160 38, 124 76 L 124 146 Z" fill="#2E1E14"/>
+            <ellipse cx="160" cy="42" rx="11" ry="14" fill="#B08D57"/><path d="M149 34 Q 160 24, 171 34 Z" fill="#4B5236"/>
+            <rect x="20" y="156" width="80" height="14" fill="#F6F1E8" stroke="#4B5236" stroke-width=".8"/><rect x="230" y="156" width="70" height="14" fill="#F6F1E8" stroke="#4B5236" stroke-width=".8"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">04</span><span class="name">Foundation</span></p>
+          <dl>
+            <dt>Scene</dt><dd>In a bright travertine courtyard, a dark stone arch is being completed. The keystone at its crown is the gold seed. Rolled blueprints, a plumb line and a set square lie at its feet.</dd>
+            <dt>Surreal turn</dt><dd>The idea becomes the stone that holds the whole structure together.</dd>
+            <dt>Light</dt><dd>Midday sun, the arch almost black against ivory sky; the seed the only warm point.</dd>
+            <dt>Camera</dt><dd>Frontal and symmetrical; a slow dolly through the arch.</dd>
+            <dt>Words</dt><dd>"Structure before style", with the four process steps along the base.</dd>
+          </dl>
+          <p class="cut">Into 05: through the arch, the light turns to the orange of a foundry fire.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame"><span class="tc">05 · Selected work</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#2E1E14"/>
+            <rect x="0" y="120" width="320" height="60" fill="#4B5236" opacity=".7"/>
+            <g><ellipse cx="50" cy="100" rx="16" ry="20" fill="#D9C9A8"/><ellipse cx="110" cy="100" rx="16" ry="20" fill="#4B5236" stroke="#D9C9A8" stroke-width=".8"/><ellipse cx="170" cy="96" rx="20" ry="25" fill="#B08D57"/><ellipse cx="230" cy="100" rx="16" ry="20" fill="#F6F1E8"/><ellipse cx="290" cy="100" rx="16" ry="20" fill="#2E1E14" stroke="#B08D57" stroke-width="1"/></g>
+            <polygon points="160,0 180,0 176,70 164,70" fill="#B08D57" opacity=".6"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">05</span><span class="name">Character</span></p>
+          <dl>
+            <dt>Scene</dt><dd>A foundry workbench: a row of seed casts in different materials (plaster, olive-glazed ceramic, burnished gold, ivory porcelain, dark bronze). One is just being lifted from its mould, still glowing.</dd>
+            <dt>Surreal turn</dt><dd>One idea tried in many characters; one stands out.</dd>
+            <dt>Light</dt><dd>Fire light from the furnace, deep shadows, sparks of gold.</dd>
+            <dt>Camera</dt><dd>Lateral track along the row, stopping on the glowing cast.</dd>
+            <dt>Words</dt><dd>Selected work: "Each brand finds its character."</dd>
+          </dl>
+          <p class="cut">Into 06: the glowing cast is pressed like a seal into an ivory surface.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame"><span class="tc">06 · Brand &amp; identity</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#2E1E14"/>
+            <rect x="100" y="10" width="120" height="150" fill="#F6F1E8"/>
+            <ellipse cx="160" cy="88" rx="22" ry="28" fill="none" stroke="#B08D57" stroke-width="4"/><path d="M138 70 Q 160 46, 182 70" fill="none" stroke="#B08D57" stroke-width="4"/>
+            <rect x="18" y="128" width="70" height="6" fill="#F6F1E8"/><rect x="18" y="140" width="52" height="3" fill="#D9C9A8"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">06</span><span class="name">Identity</span></p>
+          <dl>
+            <dt>Scene</dt><dd>A tall ivory wall in a dark gallery carries a single blind-embossed mark drawn from the seed's silhouette, picked out in gold leaf. The cast that made it rests below.</dd>
+            <dt>Surreal turn</dt><dd>The object has become a sign: the moment an idea turns into an identity.</dd>
+            <dt>Light</dt><dd>Spotlit wall, everything else in shadow; the emboss casts fine shadows.</dd>
+            <dt>Camera</dt><dd>Centred and still: the most composed frame of the film.</dd>
+            <dt>Words</dt><dd>Brand Strategy &amp; Identity: "A clear position, made visible."</dd>
+          </dl>
+          <p class="cut">Into 07: the camera tilts down to a table where the mark is being turned into a system.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame light"><span class="tc">07 · Web design</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#D9C9A8"/>
+            <rect x="24" y="24" width="76" height="60" fill="#F6F1E8"/><ellipse cx="62" cy="56" rx="10" ry="13" fill="none" stroke="#B08D57" stroke-width="3"/>
+            <rect x="120" y="24" width="24" height="60" fill="#2E1E14"/><rect x="148" y="24" width="24" height="60" fill="#4B5236"/><rect x="176" y="24" width="24" height="60" fill="#B08D57"/>
+            <rect x="220" y="24" width="76" height="60" fill="#2E1E14"/><rect x="230" y="36" width="40" height="8" fill="#F6F1E8"/><rect x="230" y="50" width="56" height="3" fill="#D9C9A8"/>
+            <rect x="24" y="104" width="120" height="52" fill="#2E1E14"/><rect x="34" y="114" width="60" height="6" fill="#D9C9A8"/>
+            <rect x="164" y="104" width="132" height="52" fill="#F6F1E8"/><rect x="174" y="114" width="50" height="34" fill="#4B5236"/><ellipse cx="250" cy="130" rx="8" ry="10" fill="#B08D57"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">07</span><span class="name">Language</span></p>
+          <dl>
+            <dt>Scene</dt><dd>Top-down on a giant travertine table: the mark on a card, colour swatches in the brand palette, a type specimen book, paper stocks, a tablet showing a page layout, and the gold seed itself as a paperweight, all on a strict grid.</dd>
+            <dt>Surreal turn</dt><dd>A design system as real, touchable objects around the original idea.</dd>
+            <dt>Light</dt><dd>Even north light, crisp shadows; the darkest objects anchor the grid.</dd>
+            <dt>Camera</dt><dd>Overhead, a slow rotation that snaps onto the grid.</dd>
+            <dt>Words</dt><dd>Web Design &amp; Development: "The same idea, on every screen."</dd>
+          </dl>
+          <p class="cut">Into 08: the camera rises; the objects on the table stand up and grow into a landscape.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame"><span class="tc">08 · Marketing</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#4B5236"/>
+            <rect x="0" y="140" width="320" height="40" fill="#2E1E14"/>
+            <rect x="30" y="60" width="70" height="80" fill="#F6F1E8"/><path d="M48 60 C 48 40, 82 40, 82 60" fill="none" stroke="#2E1E14" stroke-width="3"/><ellipse cx="65" cy="98" rx="8" ry="10" fill="none" stroke="#B08D57" stroke-width="3"/>
+            <rect x="130" y="80" width="44" height="60" fill="#D9C9A8"/><ellipse cx="152" cy="106" rx="6" ry="8" fill="none" stroke="#B08D57" stroke-width="2"/>
+            <rect x="200" y="40" width="40" height="100" fill="#2E1E14" stroke="#D9C9A8"/><ellipse cx="220" cy="80" rx="6" ry="8" fill="none" stroke="#B08D57" stroke-width="2"/>
+            <ellipse cx="282" cy="132" rx="7" ry="9" fill="#B08D57"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">08</span><span class="name">Expression</span></p>
+          <dl>
+            <dt>Scene</dt><dd>An olive-dusk landscape of the brand's applications at impossible scale: a shopping bag as large as a pavilion, a book, a phone standing like a monolith, a sign. Each carries the seed mark; the gold seed itself rolls along the path between them.</dd>
+            <dt>Surreal turn</dt><dd>Everyday touchpoints become landmarks; the original seed is still travelling.</dd>
+            <dt>Light</dt><dd>Low golden-hour sun, long shadows, ivory objects glowing against olive.</dd>
+            <dt>Camera</dt><dd>Lateral tracking shot, following the rolling seed.</dd>
+            <dt>Words</dt><dd>Digital Marketing: "One message, in every channel."</dd>
+          </dl>
+          <p class="cut">Into 09: crane up and away until the landscape becomes a city seen from above.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame"><span class="tc">09 · SEO &amp; growth</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#2E1E14"/>
+            <g fill="#D9C9A8"><rect x="40" y="30" width="30" height="24"/><rect x="110" y="20" width="22" height="40"/><rect x="200" y="36" width="36" height="22"/><rect x="262" y="24" width="22" height="30"/><rect x="60" y="112" width="40" height="26"/><rect x="226" y="116" width="34" height="26"/></g>
+            <ellipse cx="160" cy="88" rx="30" ry="22" fill="#F6F1E8"/><ellipse cx="160" cy="88" rx="7" ry="9" fill="#B08D57"/>
+            <g stroke="#B08D57" stroke-width="1" fill="none"><path d="M70 42 L 134 80"/><path d="M121 60 L 148 74"/><path d="M200 48 L 180 74"/><path d="M262 40 L 188 80"/><path d="M80 112 L 136 96"/><path d="M240 116 L 186 96"/></g>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">09</span><span class="name">Ecosystem</span></p>
+          <dl>
+            <dt>Scene</dt><dd>Aerial at dusk: a small city built from the brand's objects; its central square is seed-shaped, the gold seed at its centre, and lit paths run to it from every building.</dd>
+            <dt>Surreal turn</dt><dd>The brand as a place people move through, every road leading back to the idea.</dd>
+            <dt>Light</dt><dd>Espresso dusk; windows and paths catch gold.</dd>
+            <dt>Camera</dt><dd>Top-down, slow rise.</dd>
+            <dt>Words</dt><dd>SEO &amp; GEO and Growth: "Found, chosen, and growing."</dd>
+          </dl>
+          <p class="cut">Into 10: the camera drops back to ground level at the city's edge, facing a doorway.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="frame"><span class="tc">10 · Start a project</span>
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect width="320" height="180" fill="#2E1E14"/>
+            <rect x="214" y="30" width="56" height="120" fill="#F6F1E8"/>
+            <polygon points="214,150 270,150 320,180 150,180" fill="#D9C9A8" opacity=".35"/>
+            <ellipse cx="200" cy="146" rx="6" ry="7" fill="#B08D57"/>
+            <rect x="18" y="40" width="96" height="7" fill="#F6F1E8"/><rect x="18" y="54" width="70" height="3" fill="#D9C9A8"/><rect x="18" y="66" width="40" height="10" fill="#F6F1E8"/>
+          </svg>
+        </div>
+        <div class="notes">
+          <p class="stage"><span class="n">10</span><span class="name">Beyond</span></p>
+          <dl>
+            <dt>Scene</dt><dd>A dark wall with one tall open doorway full of ivory light. A single new gold seed rests on the threshold, its shadow stretching back toward us.</dd>
+            <dt>Surreal turn</dt><dd>The story ends where it began, ready to start again: your idea is the next seed.</dd>
+            <dt>Light</dt><dd>Backlit doorway, the only bright shape; the seed rim-lit gold.</dd>
+            <dt>Camera</dt><dd>Slow push toward the doorway; its light grows into the ivory enquiry band.</dd>
+            <dt>Words</dt><dd>"Tell us what you are building." and Start a Project, never animated.</dd>
+          </dl>
+          <p class="cut">The doorway's light becomes the page's final band.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="a4">
+    <div class="head"><p class="label">4 · Other concepts</p><h2 id="a4">Still available.</h2></div>
+    <div class="alts">
+      <div class="alt"><h3>A · The Golden Thread</h3><p class="small">A gold thread from a column-sized spool through a giant needle, a loom, an embroidered mark and a city of brand objects. Strongest continuity; risk of reading as textiles.</p></div>
+      <div class="alt"><h3>B · The Seal</h3><p class="small">Molten gold, letterpress type and a signet pressing a mark into wax. Heritage and authority; risk of reading as a print studio.</p></div>
+      <div class="alt"><h3>C · The Sheet</h3><p class="small">One ivory sheet folding into architecture and applications. Quiet and editorial; harder to give strong contrast.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="a5">
+    <div class="ask">
+      <p class="label">Decisions</p>
+      <h2 id="a5" style="color:var(--ivory)">Before anything is made.</h2>
+      <ul>
+        <li><b>Approve the storyboard</b>, or tell me which shots to change.</li>
+        <li><b>The seed:</b> an acorn (recommended), a peach stone, or an almond (closest to an olive pit, so I'd avoid it).</li>
+        <li><b>People:</b> the scenes work without them. A small anonymous figure in some shots would sharpen the scale; that needs your yes under the imagery rules.</li>
+        <li><b>Test frames:</b> three 4K test shots (01, 04 and 05) for about $0.48 through fal.ai, to judge realism and contrast before the full set.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer><p class="small muted">Sketches are composition guides only. Nothing on the live site has changed.</p></footer>
+</div>

@@ -1,0 +1,85 @@
+# Lint, type-check, test and build both ways on every push and pull request.
+# The public build swaps the olive story for an empty stand-in, so it can't be the only check:
+# `typecheck` covers every story file, `check:story` guards next.config.ts and the wiring, and
+# `verify:builds` builds the public site (no story, indexable) and the story preview (story,
+# noindex, written to .next-preview). See docs/olive-story.md §6.
+#
+# Security tests run as required tests: CALIX_REQUIRE_BROWSER / CALIX_REQUIRE_PRODLIKE turn a
+# missing browser, nginx or pm2 into a failure instead of a skip (tests/helpers/browser.ts).
+#
+# Actions are pinned to full commit SHAs (the tag each one resolved to when pinned is noted).
+# When a job fails, test logs (app, Nginx and PM2 output, secrets replaced; never settings files
+# or environment files) are uploaded from CALIX_DIAGNOSTICS_DIR (tests/helpers/diagnostics.ts).
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+# Read-only token: the jobs only check out code and upload artifacts.
+permissions:
+  contents: read
+
+env:
+  # Node version pinned to the one the suite is verified with (package.json engines: >=22.18).
+  NODE_VERSION: "22.22.0"
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    env:
+      CALIX_REQUIRE_BROWSER: "1"
+      CALIX_DIAGNOSTICS_DIR: ${{ github.workspace }}/ci-diagnostics
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run validate
+      # Chromium build pinned by the playwright version in package-lock.json (about 1 minute).
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:integration
+      - run: npm run verify:builds
+      - name: Upload test logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: validate-diagnostics
+          path: ${{ env.CALIX_DIAGNOSTICS_DIR }}
+          if-no-files-found: ignore
+          retention-days: 7
+
+  prodlike:
+    # The built site under PM2 behind Nginx (docs/admin-panel-runbook.md §10). Separate job so its
+    # system packages don't slow the main checks.
+    runs-on: ubuntu-24.04
+    env:
+      CALIX_REQUIRE_PRODLIKE: "1"
+      CALIX_DIAGNOSTICS_DIR: ${{ github.workspace }}/ci-diagnostics
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends nginx
+      # The same PM2 version as the runbook's servers; a CI tool, not a project dependency.
+      - run: npm install -g pm2@5.4.3
+      - run: npm run build
+      - run: npm run test:prodlike
+      - name: Upload test logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: prodlike-diagnostics
+          path: ${{ env.CALIX_DIAGNOSTICS_DIR }}
+          if-no-files-found: ignore
+          retention-days: 7
