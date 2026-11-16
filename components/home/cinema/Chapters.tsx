@@ -47,6 +47,9 @@ export async function Chapters() {
           <Image src="/brand/calix-primary-reversed.png" alt="" width={953} height={1084} unoptimized loading="eager" />
         </div>
       </div>
+      {/* The track gives the story its scroll length; the stage inside it is held in view by CSS
+          (position: sticky), so the browser itself keeps it still while scrolling. */}
+      <div className="cx-track" data-cx-track>
       <div className="cx-stage" data-cx-stage>
         <canvas className="cx-canvas" data-cx-canvas aria-hidden="true" />
         <div className="cx-grain" data-cx-grain aria-hidden="true" />
@@ -399,6 +402,7 @@ export async function Chapters() {
           ))}
           <i className="cx-rail__bar" data-cx-rail-bar aria-hidden="true" />
         </nav>
+      </div>
       </div>
 
       {/* How we work together: in normal flow after the story. */}

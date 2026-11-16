@@ -88,7 +88,9 @@
   html[data-cinema="on"]:has([data-story-root]) {
     scroll-behavior: auto;
 
-    & .cx-stage { position: relative; height: calc(100svh - var(--header-h)); overflow: hidden; background: var(--color-espresso); }
+    /* The stage is held in view by the browser (sticky), not by script, so it never lags behind the
+       scroll and jumps back on phones. The engine sets the track's height (the story's length). */
+    & .cx-stage { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); overflow: hidden; background: var(--color-espresso); }
     & .cx-canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
     & .cx-grain { display: block; position: absolute; inset: 0; pointer-events: none; opacity: 0.07; mix-blend-mode: overlay; }
     & .cx-still { display: none; }

@@ -35,7 +35,8 @@ export function startStory(root: HTMLElement): () => void {
   gsap.registerPlugin(ScrollTrigger);
   const stage = root.querySelector<HTMLElement>("[data-cx-stage]");
   const canvas = root.querySelector<HTMLCanvasElement>("[data-cx-canvas]");
-  if (!stage || !canvas) return () => {};
+  const track = root.querySelector<HTMLElement>("[data-cx-track]");
+  if (!stage || !canvas || !track) return () => {};
   const w: World = createWorld(canvas);
 
   /* ---------------------------------------------------------------- text */
@@ -223,6 +224,9 @@ export function startStory(root: HTMLElement): () => void {
   }
 
   function resize() {
+    // The track is the stage plus the story's scroll length, so the sticky stage stays in view for
+    // exactly U_TOTAL stage heights of scrolling.
+    track!.style.height = `${(1 + U_TOTAL) * stage!.offsetHeight}px`;
     const rect = stage!.getBoundingClientRect();
     sizeWorld(w, rect.width, rect.height);
     layoutOrigin(w);
@@ -280,13 +284,14 @@ export function startStory(root: HTMLElement): () => void {
   const tween = gsap.to(state, {
     u: U_TOTAL,
     ease: "none",
+    // No script pin: the stage is position: sticky inside the track (app/cinema.css), so the browser
+    // keeps it still. Pinning by script made the stage lag a frame behind the first touch scroll on
+    // phones and snap back. The trigger is the track, whose position never changes while scrolling.
     scrollTrigger: {
-      trigger: stage,
+      trigger: track,
       start: () => `top top+=${headerH()}`,
       end: () => `+=${U_TOTAL * stage.offsetHeight}`,
-      pin: true,
       scrub: 1,
-      anticipatePin: 1,
       invalidateOnRefresh: true,
       onRefresh: () => { resize(); },
     },
@@ -392,6 +397,7 @@ export function startStory(root: HTMLElement): () => void {
   if (process.env.NODE_ENV !== "production") (window as unknown as { __seek: (u: number) => void }).__seek = (u) => { state.u = u; render(u); };
 
   return () => {
+    track.style.height = "";
     window.clearTimeout(pendingTimer);
     clearPending();
     landTimers.forEach((t) => window.clearTimeout(t));
