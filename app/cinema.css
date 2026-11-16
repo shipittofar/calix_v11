@@ -50,6 +50,7 @@
   .cx-motion-only { display: none; }
   .cx-slots { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
   .cx-slots:not(:has(li:not(.cx-motion-only))) { display: none; }
+  .cx-loader { display: none; }
   .cx-logo { margin: 0; justify-self: center; width: min(100%, 320px); }
   .cx-logo img { display: block; width: 100%; height: auto; }
   .cx-ch5 { grid-template-columns: minmax(0, 1fr); }
@@ -119,6 +120,59 @@
     & .cx-steps li.is-past h3 { margin: 0; }
     /* Just above the ground line (82 % of the stage), clear of the point labels below it. */
     & .cx-teaser { position: absolute; z-index: 2; left: var(--margin); top: auto; bottom: calc(18% + 16px); margin: 0; opacity: 0; }
+
+    /* Until the engine has started and placed the text, only Origin shows. Every chapter is stacked
+       on the same stage, so without this the later chapters' text sits over the hero while the
+       engine chunk downloads (most visible on a first, uncached visit). visibility keeps the layout,
+       so the engine can still measure these elements. */
+    &:not([data-cinema-ready]) .cx-ch:not(.cx-ch1) { visibility: hidden; }
+
+    /* Loading screen: the chapter 06 logo, once per tab session, home page only. Its state lives in
+       html[data-loader], set by the pre-paint script (lib/motion.ts) and StoryPlayer, and only moves
+       forward: show → leaving → done. It is never shown again on the same page, whatever the layout
+       does underneath, and it lifts at 3.2 s at the latest. It never takes clicks.
+
+       The motion, in the story's own language: a thread of gold light pours down onto the emblem
+       (as in Awakening), the logo fills with light from the base up, a soft glow breathes behind it
+       and a sheen of light passes across the mark while the page loads. On leaving, the mark rises
+       towards the viewer and the cover dissolves into the hero. */
+    &:is([data-loader="show"], [data-loader="leaving"]) .cx-loader {
+      display: grid; place-items: center; position: fixed; inset: 0; z-index: 200;
+      background: var(--color-espresso); pointer-events: none; overflow: hidden;
+    }
+    /* Solid palette fills only (no gradients, no rounding): the glow is a gold square softened by
+       blur, the thread a gold hairline, the fill a crisp edge, the sheen a solid ivory band. */
+    & .cx-loader::before {
+      content: ""; position: absolute; inset: 0; margin: auto; width: min(34vmin, 300px); height: min(34vmin, 300px);
+      background: var(--color-gold); filter: blur(90px);
+      opacity: 0; animation: cx-loader-glow-in 1.2s ease 0.5s forwards, cx-loader-glow 2.6s ease-in-out 1.7s infinite;
+    }
+    & .cx-loader__mark { position: relative; height: min(36vh, 320px); aspect-ratio: 953 / 1084; }
+    /* The logo fills with light from its base up, like the chalice being filled. */
+    & .cx-loader__mark img {
+      display: block; width: 100%; height: 100%;
+      clip-path: inset(100% 0 0 0);
+      animation: cx-loader-fill 1.1s cubic-bezier(0.6, 0.05, 0.2, 1) 0.4s forwards;
+    }
+    /* The thread of light that pours onto the emblem: it ends at the tip of the star, which sits
+       11.7 % below the top of the logo file. */
+    & .cx-loader__mark::before {
+      content: ""; position: absolute; left: 50%; bottom: 88.3%; width: 1px; height: 38vh; margin-left: -0.5px;
+      background: var(--color-gold);
+      transform: scaleY(0); transform-origin: top;
+      animation: cx-loader-pour 0.6s cubic-bezier(0.5, 0, 0.2, 1) 0.05s forwards, cx-loader-pour-out 0.6s ease 1.1s forwards;
+    }
+    /* A band of light passing across the mark, cut to the logo's own shape. */
+    & .cx-loader__mark::after {
+      content: ""; position: absolute; inset: 0;
+      background: var(--color-ivory);
+      -webkit-mask: url("/brand/calix-primary-reversed.png") center / contain no-repeat; mask: url("/brand/calix-primary-reversed.png") center / contain no-repeat;
+      clip-path: polygon(-30% 0, -18% 0, -28% 100%, -40% 100%);
+      opacity: 0;
+      animation: cx-loader-sheen 1.9s ease-in-out 1.3s infinite;
+    }
+    &[data-loader="leaving"] .cx-loader { animation: cx-loader-out 0.8s ease forwards; }
+    &[data-loader="leaving"] .cx-loader__mark { animation: cx-loader-mark-out 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
     & .cx-motion-only { display: block; }
     & .cx-static-only { display: none; }
@@ -223,3 +277,18 @@
 
   }
 }
+
+/* Loading screen (motion mode only, see the loader rules above). */
+@keyframes cx-loader-pour { to { transform: scaleY(1); } }
+@keyframes cx-loader-pour-out { to { opacity: 0; } }
+@keyframes cx-loader-fill { to { clip-path: inset(0 0 0 0); } }
+@keyframes cx-loader-glow-in { to { opacity: 0.22; } }
+@keyframes cx-loader-glow { 0%, 100% { transform: scale(0.9); } 50% { transform: scale(1.08); } }
+@keyframes cx-loader-sheen {
+  0% { clip-path: polygon(-30% 0, -18% 0, -28% 100%, -40% 100%); opacity: 0; }
+  12% { opacity: 0.85; }
+  70% { clip-path: polygon(128% 0, 140% 0, 130% 100%, 118% 100%); opacity: 0.85; }
+  80%, 100% { clip-path: polygon(128% 0, 140% 0, 130% 100%, 118% 100%); opacity: 0; }
+}
+@keyframes cx-loader-out { to { opacity: 0; } }
+@keyframes cx-loader-mark-out { to { transform: translateY(-10px) scale(1.06); } }

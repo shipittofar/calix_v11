@@ -383,6 +383,10 @@ export function startStory(root: HTMLElement): () => void {
   };
   window.addEventListener("scroll", onPendingScroll, { passive: true });
   requestAnimationFrame(() => ScrollTrigger.refresh());
+  // The first frame is drawn now, so every text line has its state before the player marks the
+  // story ready (and the later chapters stop being hidden).
+  render(state.u);
+  dirty = false;
 
   // Debug hook in development: __seek(u) renders any moment of the story.
   if (process.env.NODE_ENV !== "production") (window as unknown as { __seek: (u: number) => void }).__seek = (u) => { state.u = u; render(u); };

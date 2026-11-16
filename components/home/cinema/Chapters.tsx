@@ -38,6 +38,15 @@ export async function Chapters() {
   const projects = workGateMet ? featuredProjects.slice(0, 3) : [];
   return (
     <div className="cx surface-inverse" data-cx>
+      {/* Loading screen: the chapter 06 logo, shown only in motion mode while the story engine
+          loads (app/cinema.css). Decorative: the page beneath stays in the accessibility tree. */}
+      <div className="cx-loader" aria-hidden="true">
+        {/* Unoptimised on purpose: the sheen in app/cinema.css masks with this same file, so the
+            browser downloads it once. */}
+        <div className="cx-loader__mark">
+          <Image src="/brand/calix-primary-reversed.png" alt="" width={953} height={1084} unoptimized loading="eager" />
+        </div>
+      </div>
       <div className="cx-stage" data-cx-stage>
         <canvas className="cx-canvas" data-cx-canvas aria-hidden="true" />
         <div className="cx-grain" data-cx-grain aria-hidden="true" />
