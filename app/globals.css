@@ -40,7 +40,8 @@
   --margin: clamp(20px, 5vw, 72px);
   --gutter: clamp(16px, 1.7vw, 24px);
   --content-max: 1456px;
-  --header-h: 64px;
+  /* 68 px leaves the header emblem (48 px visible) its clear space of a fifth above and below. */
+  --header-h: 68px;
 
   /* Semantic roles */
   --surface-page: var(--color-ivory);

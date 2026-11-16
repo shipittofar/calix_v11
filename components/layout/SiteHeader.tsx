@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { primaryCta, primaryNav } from "@/content/site";
 import { MobileMenu } from "./MobileMenu";
-import { Wordmark } from "./Wordmark";
+import { HeaderLogo } from "./Wordmark";
 
 export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="container-calix flex h-[var(--header-h)] items-center justify-between gap-4">
-        <Link href="/" className="flex min-h-11 items-center no-underline">
-          <Wordmark />
+        <Link href="/" aria-label="CALIX" className="flex min-h-11 items-center no-underline">
+          <HeaderLogo />
         </Link>
 
         <nav aria-label="Main" className="hidden lg:block">
